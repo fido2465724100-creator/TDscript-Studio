@@ -32,7 +32,8 @@ class OpenAiCompatibleLlmClient(
     val baseUrl: String = "http://127.0.0.1:11434/v1",
     val modelName: String = "llama3",
     val apiKey: String = "",
-    val timeoutMs: Int = 30_000
+    val timeoutMs: Int = 120_000,
+    val maxTokens: Int = 400
 ) : LlmClient {
 
     override fun chat(messages: List<ChatMessage>): ChatResponse {
@@ -76,7 +77,7 @@ class OpenAiCompatibleLlmClient(
         val messagesJson = messages.joinToString(",") { msg ->
             """{"role":"${escapeJson(msg.role)}","content":"${escapeJson(msg.content)}"}"""
         }
-        return """{"model":"${escapeJson(modelName)}","messages":[$messagesJson],"temperature":0.1}"""
+        return """{"model":"${escapeJson(modelName)}","messages":[$messagesJson],"temperature":0.1,"max_tokens":$maxTokens}"""
     }
 
     private fun escapeJson(s: String): String {

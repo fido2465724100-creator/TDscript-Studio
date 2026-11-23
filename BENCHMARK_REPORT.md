@@ -10,9 +10,9 @@ Objective benchmark comparing **7 target languages/runtimes** across 10 identica
 | **TDscript Experimental (AI-First)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 3171 | 638 | 4,8 |
 | **Python** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2763 | 598 | 4,8 |
 | **C++ (Arduino/ESP32 style)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2946 | 709 | 7,8 |
-| **Lua** | `SKIPPED_NO_RUNTIME` | — | — | — | — | — | — |
+| **Lua** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2490 | 604 | 4,8 |
 | **JavaScript (Node.js)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2857 | 703 | 4,8 |
-| **Kotlin** | `SKIPPED_NO_RUNTIME` | — | — | — | — | — | — |
+| **Kotlin** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2786 | 680 | 6,8 |
 
 ---
 

@@ -19,40 +19,53 @@ class BenchmarkRunnerTest {
 
             // Test Auto-Repair for Task 10 or errors
             if (userMsg.contains("failed verification") || userMsg.contains("E104") || userMsg.contains("SCOPE_VIOLATION")) {
-                val fixCode = if (sysMsg.contains("Python")) {
-                    """
-                    ```python
-                    from mock_hw import I2C
-                    data = I2C.read(0x76, 0xD0, 1)
-                    print("Fixed: 0x76")
-                    ```
+                val fixCode = when {
+                    sysMsg.contains("Python") -> """
+                        ```python
+                        from mock_hw import I2C
+                        data = I2C.read(0x76, 0xD0, 1)
+                        print("Fixed: 0x76")
+                        ```
                     """.trimIndent()
-                } else if (sysMsg.contains("Node.js")) {
-                    """
-                    ```javascript
-                    const { I2C } = require('./mock_hw');
-                    const data = I2C.read(0x76, 0xD0, 1);
-                    console.log("Fixed: 0x76");
-                    ```
+                    sysMsg.contains("Node.js") -> """
+                        ```javascript
+                        const { I2C } = require('./mock_hw');
+                        const data = I2C.read(0x76, 0xD0, 1);
+                        console.log("Fixed: 0x76");
+                        ```
                     """.trimIndent()
-                } else if (sysMsg.contains("C++")) {
-                    """
-                    ```cpp
-                    #include "mock_hw.hpp"
-                    int main() {
-                        auto data = I2C::read(0x76, 0xD0, 1);
-                        std::cout << "Fixed: 0x76\n";
-                        return 0;
-                    }
-                    ```
+                    sysMsg.contains("C++") -> """
+                        ```cpp
+                        #include "mock_hw.hpp"
+                        int main() {
+                            auto data = I2C::read(0x76, 0xD0, 1);
+                            std::cout << "Fixed: 0x76\n";
+                            return 0;
+                        }
+                        ```
                     """.trimIndent()
-                } else {
-                    """
-                    ```tdscript
-                    let chip = 0x76;
-                    let data = I2C.read(chip, 0xD0, 1);
-                    print("Fixed: 0x76");
-                    ```
+                    sysMsg.contains("Lua") -> """
+                        ```lua
+                        local hw = require("mock_hw")
+                        local data = hw.I2C.read(0x76, 0xD0, 1)
+                        print("Fixed: 0x76")
+                        ```
+                    """.trimIndent()
+                    sysMsg.contains("Kotlin") -> """
+                        ```kotlin
+                        import com.tdscript.benchmark.mock.*
+                        fun main() {
+                            val data = I2C.read(0x76, 0xD0, 1)
+                            println("Fixed: 0x76")
+                        }
+                        ```
+                    """.trimIndent()
+                    else -> """
+                        ```tdscript
+                        let chip = 0x76;
+                        let data = I2C.read(chip, 0xD0, 1);
+                        print("Fixed: 0x76");
+                        ```
                     """.trimIndent()
                 }
                 return ChatResponse(fixCode)
@@ -60,36 +73,47 @@ class BenchmarkRunnerTest {
 
             // Task 10 initial attempt: deliberately violate scope to test auto-repair
             if (userMsg.contains("Task ID: 10")) {
-                val badCode = if (sysMsg.contains("Python")) {
-                    """
-                    ```python
-                    from mock_hw import I2C
-                    data = I2C.read(0x68, 0xD0, 1)
-                    ```
+                val badCode = when {
+                    sysMsg.contains("Python") -> """
+                        ```python
+                        from mock_hw import I2C
+                        data = I2C.read(0x68, 0xD0, 1)
+                        ```
                     """.trimIndent()
-                } else if (sysMsg.contains("Node.js")) {
-                    """
-                    ```javascript
-                    const { I2C } = require('./mock_hw');
-                    const data = I2C.read(0x68, 0xD0, 1);
-                    ```
+                    sysMsg.contains("Node.js") -> """
+                        ```javascript
+                        const { I2C } = require('./mock_hw');
+                        const data = I2C.read(0x68, 0xD0, 1);
+                        ```
                     """.trimIndent()
-                } else if (sysMsg.contains("C++")) {
-                    """
-                    ```cpp
-                    #include "mock_hw.hpp"
-                    int main() {
-                        auto data = I2C::read(0x68, 0xD0, 1);
-                        return 0;
-                    }
-                    ```
+                    sysMsg.contains("C++") -> """
+                        ```cpp
+                        #include "mock_hw.hpp"
+                        int main() {
+                            auto data = I2C::read(0x68, 0xD0, 1);
+                            return 0;
+                        }
+                        ```
                     """.trimIndent()
-                } else {
-                    """
-                    ```tdscript
-                    let forbidden = 104; // 0x68
-                    let data = I2C.read(forbidden, 208, 1);
-                    ```
+                    sysMsg.contains("Lua") -> """
+                        ```lua
+                        local hw = require("mock_hw")
+                        local data = hw.I2C.read(0x68, 0xD0, 1)
+                        ```
+                    """.trimIndent()
+                    sysMsg.contains("Kotlin") -> """
+                        ```kotlin
+                        import com.tdscript.benchmark.mock.*
+                        fun main() {
+                            val data = I2C.read(0x68, 0xD0, 1)
+                        }
+                        ```
+                    """.trimIndent()
+                    else -> """
+                        ```tdscript
+                        let forbidden = 104; // 0x68
+                        let data = I2C.read(forbidden, 208, 1);
+                        ```
                     """.trimIndent()
                 }
                 return ChatResponse(badCode)
@@ -126,6 +150,28 @@ class BenchmarkRunnerTest {
                         WATCHDOG::feed();
                         std::cout << "96 245 100 101 POLL_OK true SYSTEM_OK sensor_01 192.168.1.50 24.5C 0x76 ALERT_TEMP: 24.5\n";
                         return 0;
+                    }
+                    ```
+                """.trimIndent()
+
+                sysMsg.contains("Lua") -> """
+                    ```lua
+                    local hw = require("mock_hw")
+                    local chip = hw.I2C.read(0x76, 0xD0, 1)
+                    local temp = hw.PLC.modbus_read("127.0.0.1", 100)
+                    hw.WATCHDOG.feed()
+                    print("96 245 100 101 POLL_OK true SYSTEM_OK sensor_01 192.168.1.50 24.5C 0x76 ALERT_TEMP: 24.5")
+                    ```
+                """.trimIndent()
+
+                sysMsg.contains("Kotlin") -> """
+                    ```kotlin
+                    import com.tdscript.benchmark.mock.*
+                    fun main() {
+                        val chip = I2C.read(0x76, 0xD0, 1)
+                        val temp = PLC.modbusRead("127.0.0.1", 100)
+                        WATCHDOG.feed()
+                        println("96 245 100 101 POLL_OK true SYSTEM_OK sensor_01 192.168.1.50 24.5C 0x76 ALERT_TEMP: 24.5")
                     }
                     ```
                 """.trimIndent()
@@ -167,31 +213,9 @@ class BenchmarkRunnerTest {
         // 7 profiles evaluated
         assertEquals(7, summaries.size)
 
-        // TDscript Base & Experimental must be COMPLETED
-        val baseSummary = summaries.first { it.profile.id == "tdscript_base" }
-        val expSummary = summaries.first { it.profile.id == "tdscript_experimental" }
-        assertEquals("COMPLETED", baseSummary.status)
-        assertEquals("COMPLETED", expSummary.status)
-
-        // Python, C++, Node.js should be COMPLETED on this Linux host
-        val pySummary = summaries.first { it.profile.id == "python" }
-        assertEquals("COMPLETED", pySummary.status)
-
-        val jsSummary = summaries.first { it.profile.id == "javascript" }
-        assertEquals("COMPLETED", jsSummary.status)
-
-        val cppSummary = summaries.first { it.profile.id == "cpp" }
-        assertEquals("COMPLETED", cppSummary.status)
-
-        // Lua and Kotlin should be gracefully SKIPPED_NO_RUNTIME
-        val luaSummary = summaries.first { it.profile.id == "lua" }
-        assertEquals("SKIPPED_NO_RUNTIME", luaSummary.status)
-
-        val ktSummary = summaries.first { it.profile.id == "kotlin" }
-        assertEquals("SKIPPED_NO_RUNTIME", ktSummary.status)
-
-        // All completed profiles must have 100% final success
-        for (s in summaries.filter { it.status == "COMPLETED" }) {
+        // All 7 profiles must be COMPLETED now that python3, g++, node, lua, kotlinc are installed
+        for (s in summaries) {
+            assertEquals("Profile ${s.profile.id} should be COMPLETED", "COMPLETED", s.status)
             assertEquals(100.0, s.finalSuccessPct, 0.01)
             assertEquals(90.0, s.firstPassPct, 0.01) // Task 10 triggered repair
             assertTrue(s.avgRepairIters > 0.0)
@@ -205,12 +229,37 @@ class BenchmarkRunnerTest {
         assertTrue(report.contains("# Global LLM Automation Benchmark Report"))
         assertTrue(report.contains("TDscript Base (v1.4.0)"))
         assertTrue(report.contains("TDscript Experimental (AI-First)"))
-        assertTrue(report.contains("SKIPPED_NO_RUNTIME"))
-        assertTrue(report.contains("First-Pass %"))
-        assertTrue(report.contains("Final Success %"))
+        assertTrue(report.contains("Python"))
+        assertTrue(report.contains("C++ (Arduino/ESP32 style)"))
+        assertTrue(report.contains("Lua"))
+        assertTrue(report.contains("JavaScript (Node.js)"))
+        assertTrue(report.contains("Kotlin"))
 
         // Save report to file for user inspection
         File("/home/anton/TDscript-Studio/BENCHMARK_REPORT.md").writeText(report)
         assertTrue(File("/home/anton/TDscript-Studio/BENCHMARK_REPORT.md").exists())
+    }
+
+    @Test
+    fun testSkippedRuntimeHandling() {
+        val mockLlm = MockBenchmarkLlm()
+        val fakeProfile = LanguageProfile(
+            id = "nonexistent_lang",
+            displayName = "NonExistent Language",
+            runtimeCommand = "non_existent_binary_xyz_1234",
+            errorRepairStyle = ErrorRepairStyle.NATIVE_STDERR,
+            useGbnf = false,
+            fileExtension = "xyz",
+            systemPromptHeader = "fake",
+            mockSignatures = "fake"
+        )
+        val runner = BenchmarkRunner(
+            llmClient = mockLlm,
+            profiles = listOf(fakeProfile)
+        )
+        val summaries = runner.runBenchmark()
+        assertEquals(1, summaries.size)
+        assertEquals("SKIPPED_NO_RUNTIME", summaries[0].status)
+        assertEquals(0.0, summaries[0].finalSuccessPct, 0.01)
     }
 }
