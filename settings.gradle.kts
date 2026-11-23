@@ -16,3 +16,4 @@ rootProject.name = "TDscript-Studio"
 include(":common-editor")
 include(":desktopApp")
 include(":androidApp")
+include(":benchmark")
