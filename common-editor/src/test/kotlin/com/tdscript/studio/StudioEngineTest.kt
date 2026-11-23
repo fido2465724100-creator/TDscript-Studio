@@ -63,4 +63,36 @@ class StudioEngineTest {
         assertEquals(245, interpreter.globals["boilerTemp"])
         assertEquals(1, interpreter.globals["pumpStatus"])
     }
+
+    @Test
+    fun testCodeProjectorPreservesStringsAndComments() {
+        val projector = CodeProjector()
+        val code = """
+            // if true comment
+            # while false comment
+            /* if true inside block comment */
+            let msg = "if true and while false"
+            let lmsg = L"LOG_KEY:if true"
+            if (true) {
+                print(msg)
+            }
+        """.trimIndent()
+
+        val ruCode = projector.projectForDisplay(code, "ru")
+
+        // Comments preserved
+        assertTrue(ruCode.contains("// if true comment"))
+        assertTrue(ruCode.contains("# while false comment"))
+        assertTrue(ruCode.contains("/* if true inside block comment */"))
+
+        // String literals preserved intact
+        assertTrue(ruCode.contains(""""if true and while false""""))
+        assertTrue(ruCode.contains("""L"LOG_KEY:if true""""))
+
+        // Actual code keywords outside strings/comments ARE projected
+        assertTrue(ruCode.contains("пусть msg ="))
+        assertTrue(ruCode.contains("пусть lmsg ="))
+        assertTrue(ruCode.contains("если (истина)"))
+    }
 }
+
