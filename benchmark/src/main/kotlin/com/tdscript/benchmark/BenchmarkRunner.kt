@@ -18,7 +18,8 @@ class BenchmarkRunner(
     private val profiles: List<LanguageProfile> = LanguageProfile.ALL_PROFILES,
     private val failuresLogFile: File = File("/home/anton/TDscript-Studio/benchmark_failures.log"),
     private val traceJsonlFile: File = File("/home/anton/TDscript-Studio/benchmark_full_trace.jsonl"),
-    private val enableGbnf: Boolean = false
+    private val enableGbnf: Boolean = false,
+    private val progressLabel: String = "TEST #4"
 ) {
 
     fun runBenchmark(): List<TargetBenchmarkSummary> {
@@ -96,7 +97,7 @@ class BenchmarkRunner(
                 val elapsedStr = formatDuration(elapsedMs)
                 val etaStr = formatDurationEta(etaMs)
                 println()
-                println("[TEST #3 | PROGRESS] Completed: $completedGlobalTasks/$totalBenchmarkTasks | Remaining: $remainingTasks | Elapsed: $elapsedStr | ETA: ~$etaStr (avg ${avgSec}s/task)")
+                println("[$progressLabel | PROGRESS] Completed: $completedGlobalTasks/$totalBenchmarkTasks | Remaining: $remainingTasks | Elapsed: $elapsedStr | ETA: ~$etaStr (avg ${avgSec}s/task)")
                 println()
                 System.out.flush()
             }

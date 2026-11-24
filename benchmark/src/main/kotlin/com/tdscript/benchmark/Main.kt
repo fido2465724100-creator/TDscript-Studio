@@ -10,23 +10,23 @@ fun main(args: Array<String>) {
 
     val model = System.getenv("LLM_MODEL")
         ?: args.find { it.startsWith("--model=") }?.substringAfter("--model=")
-        ?: "qwen3.5-9b"
+        ?: "qwen3.5-4b-unloop"
 
     val apiKey = System.getenv("LLM_API_KEY")
         ?: args.find { it.startsWith("--key=") }?.substringAfter("--key=")
         ?: ""
 
     val reportPath = args.find { it.startsWith("--out=") }?.substringAfter("--out=")
-        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT_TEST3.md"
+        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT_TEST4.md"
 
     val maxTokens = args.find { it.startsWith("--max-tokens=") }?.substringAfter("--max-tokens=")?.toIntOrNull()
         ?: 1000
 
     val failuresLogPath = args.find { it.startsWith("--failures-out=") }?.substringAfter("--failures-out=")
-        ?: "/home/anton/TDscript-Studio/benchmark_failures_test3.log"
+        ?: "/home/anton/TDscript-Studio/benchmark_failures_test4.log"
 
     val tracePath = args.find { it.startsWith("--trace-out=") }?.substringAfter("--trace-out=")
-        ?: "/home/anton/TDscript-Studio/benchmark_full_trace_test3.jsonl"
+        ?: "/home/anton/TDscript-Studio/benchmark_full_trace_test4.jsonl"
 
     val enableGbnf = args.any { it == "--use-gbnf" }
 
@@ -67,17 +67,24 @@ fun main(args: Array<String>) {
         maxTokens = maxTokens
     )
 
+    val progressLabel = args.find { it.startsWith("--progress-label=") }?.substringAfter("--progress-label=")
+        ?: "TEST #4"
+
+    val title = args.find { it.startsWith("--title=") }?.substringAfter("--title=")
+        ?: "TDscript Global LLM Benchmark — Тест №4 (Test #4)"
+
     val runner = BenchmarkRunner(
         llmClient = client,
         tasks = selectedTasks,
         profiles = selectedProfiles,
         failuresLogFile = File(failuresLogPath),
         traceJsonlFile = File(tracePath),
-        enableGbnf = enableGbnf
+        enableGbnf = enableGbnf,
+        progressLabel = progressLabel
     )
     val summaries = runner.runBenchmark()
 
-    val markdown = runner.generateReportMarkdown(summaries, "TDscript Global LLM Benchmark — Тест №3 (Test #3)")
+    val markdown = runner.generateReportMarkdown(summaries, title)
     File(reportPath).writeText(markdown)
 
     println("--------------------------------------------------------------------------------")
