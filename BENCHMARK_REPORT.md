@@ -4,15 +4,29 @@ Objective benchmark comparing **7 target languages/runtimes** across 10 identica
 
 ## Summary Comparison Table
 
-| Target | Status | First-Pass % | Final Success % | Avg Repair Iters | Total Prompt Tokens | Total Completion Tokens | Avg LOC |
-|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **TDscript Base (v1.4.0)** | `COMPLETED` | 20.0% | 90.0% | 1.00 | 16731 | 13195 | 5.8 |
-| **TDscript Experimental (AI-First)** | `COMPLETED` | 20.0% | 100.0% | 0.90 | 13751 | 9751 | 6.8 |
-| **Python** | `COMPLETED` | 100.0% | 100.0% | 0.00 | 2589 | 6577 | 0.6 |
-| **C++ (Arduino/ESP32 style)** | `COMPLETED` | 10.0% | 80.0% | 1.13 | 19797 | 10725 | 14.9 |
-| **Lua** | `COMPLETED` | 80.0% | 90.0% | 0.11 | 4842 | 3612 | 8.6 |
-| **JavaScript (Node.js)** | `COMPLETED` | 70.0% | 90.0% | 0.33 | 6938 | 2410 | 10.9 |
-| **Kotlin** | `COMPLETED` | 60.0% | 100.0% | 0.50 | 5466 | 1907 | 12.7 |
+| Target | Status | First-Pass % | Final Success % | Avg Repair Iters | Cost / Success | Total Prompt Tokens | Total Completion Tokens | Avg LOC |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **TDscript Base (v1.4.0)** | `COMPLETED` | 20.0% | 100.0% | 1.30 | 2249.3 | 9133 | 13360 | 8.1 |
+| **TDscript Experimental (AI-First)** | `COMPLETED` | 30.0% | 90.0% | 0.78 | 1653.8 | 7250 | 7634 | 7.4 |
+| **Python** | `COMPLETED` | 0.0% | 90.0% | 1.11 | 2449.7 | 7890 | 14157 | 6.6 |
+| **C++ (Arduino/ESP32 style)** | `COMPLETED` | 30.0% | 100.0% | 0.80 | 1647.0 | 6045 | 10425 | 10.3 |
+| **Lua** | `COMPLETED` | 70.0% | 100.0% | 0.40 | 1240.1 | 5350 | 7051 | 11.3 |
+| **JavaScript (Node.js)** | `COMPLETED` | 80.0% | 90.0% | 0.11 | 1626.4 | 8523 | 6115 | 8.4 |
+| **Kotlin** | `COMPLETED` | 70.0% | 100.0% | 0.30 | 1026.9 | 4480 | 5789 | 12.8 |
+
+---
+
+## Failure Breakdown
+
+| Target | TRUNCATED_IN_THINKING | COMPILE_OR_SYNTAX_ERROR | RUNTIME_OR_SCOPE_ERROR | OUTPUT_MISMATCH | Total Failures |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **TDscript Base (v1.4.0)** | 12 | 0 | 1 | 0 | 13 |
+| **TDscript Experimental (AI-First)** | 6 | 0 | 1 | 0 | 8 |
+| **Python** | 10 | 3 | 0 | 0 | 13 |
+| **C++ (Arduino/ESP32 style)** | 6 | 2 | 0 | 0 | 8 |
+| **Lua** | 1 | 0 | 3 | 0 | 4 |
+| **JavaScript (Node.js)** | 0 | 2 | 1 | 0 | 4 |
+| **Kotlin** | 0 | 3 | 0 | 0 | 3 |
 
 ---
 
