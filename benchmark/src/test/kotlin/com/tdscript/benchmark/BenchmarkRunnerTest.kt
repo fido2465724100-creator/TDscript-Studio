@@ -374,4 +374,53 @@ class BenchmarkRunnerTest {
         assertEquals("SKIPPED_NO_RUNTIME", summaries[0].status)
         assertEquals(0.0, summaries[0].finalSuccessPct, 0.01)
     }
+
+    @Test
+    fun testTask9EmptyStdoutIsOutputMismatch() {
+        val task9 = BenchmarkTask.ALL_TASKS.first { it.id == 9 }
+        val traceFile = File("build/dry_run_task9_trace.jsonl")
+        val failuresFile = File("build/dry_run_task9_failures.log")
+
+        var attemptCount = 0
+        val mockLlm = object : LlmClient {
+            override fun chat(messages: List<ChatMessage>): ChatResponse {
+                attemptCount++
+                return if (attemptCount == 1) {
+                    ChatResponse("""
+                        ```tdscript
+                        let chip = I2C.read(118, 208, 1);
+                        WATCHDOG.emergencyStop();
+                        ```
+                    """.trimIndent())
+                } else {
+                    ChatResponse("""
+                        ```tdscript
+                        let chip = I2C.read(118, 208, 1);
+                        print("SYSTEM_OK");
+                        ```
+                    """.trimIndent())
+                }
+            }
+        }
+
+        val profile = LanguageProfile.ALL_PROFILES.first { it.id == "tdscript_base" }
+        val runner = BenchmarkRunner(
+            llmClient = mockLlm,
+            tasks = listOf(task9),
+            profiles = listOf(profile),
+            failuresLogFile = failuresFile,
+            traceJsonlFile = traceFile
+        )
+
+        val summaries = runner.runBenchmark()
+        assertEquals(1, summaries.size)
+        val s = summaries[0]
+        assertEquals(0.0, s.firstPassPct, 0.01) // Attempt 1 must NOT be a PASS!
+        assertEquals(100.0, s.finalSuccessPct, 0.01) // Repaired on attempt 2
+
+        val lines = traceFile.readLines().filter { it.isNotBlank() }
+        assertTrue(lines.size >= 2)
+        assertFalse("Attempt 1 must not be PASS", lines[0].contains("\"status\":\"PASS\""))
+        assertTrue("Attempt 2 must be PASS", lines[1].contains("\"status\":\"PASS\""))
+    }
 }

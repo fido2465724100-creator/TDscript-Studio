@@ -38,6 +38,10 @@ class BenchmarkRunner(
             System.err.println("Failed to initialize trace file: ${e.message}")
         }
 
+        val benchmarkStartMs = System.currentTimeMillis()
+        val totalBenchmarkTasks = profiles.size * tasks.size
+        var completedGlobalTasks = 0
+
         for ((profileIndex, profile) in profiles.withIndex()) {
             println("▶ Starting benchmark for: ${profile.displayName}")
             System.out.flush()
@@ -47,6 +51,7 @@ class BenchmarkRunner(
                 if (!runtime.available) {
                     println("  ⚠️ Runtime '${profile.runtimeCommand}' not found. Marking as SKIPPED_NO_RUNTIME.")
                     System.out.flush()
+                    completedGlobalTasks += tasks.size
                     summaries.add(
                         TargetBenchmarkSummary(
                             profile = profile,
@@ -81,6 +86,19 @@ class BenchmarkRunner(
                     profileFailureBreakdown = profileFailureBreakdown
                 )
                 taskMetrics.add(metric)
+
+                completedGlobalTasks++
+                val remainingTasks = totalBenchmarkTasks - completedGlobalTasks
+                val elapsedMs = System.currentTimeMillis() - benchmarkStartMs
+                val avgMsPerTask = if (completedGlobalTasks > 0) elapsedMs.toDouble() / completedGlobalTasks else 0.0
+                val avgSec = String.format(Locale.US, "%.1f", avgMsPerTask / 1000.0)
+                val etaMs = (avgMsPerTask * remainingTasks).toLong()
+                val elapsedStr = formatDuration(elapsedMs)
+                val etaStr = formatDurationEta(etaMs)
+                println()
+                println("[TEST #3 | PROGRESS] Completed: $completedGlobalTasks/$totalBenchmarkTasks | Remaining: $remainingTasks | Elapsed: $elapsedStr | ETA: ~$etaStr (avg ${avgSec}s/task)")
+                println()
+                System.out.flush()
             }
 
             val completedTasks = taskMetrics.filter { it.finalSuccess }
@@ -318,21 +336,41 @@ class BenchmarkRunner(
     }
 
     private fun callLlmWithHeartbeat(messages: List<ChatMessage>, grammar: String?): ChatResponse {
-        val future = CompletableFuture.supplyAsync {
-            llmClient.chat(messages, grammar)
-        }
-        var waitSec = 0
-        while (!future.isDone) {
+        var lastEx: Exception? = null
+        for (attempt in 1..2) {
             try {
-                future.get(10, TimeUnit.SECONDS)
-                break
-            } catch (e: java.util.concurrent.TimeoutException) {
-                waitSec += 10
-                println("  ... waiting LLM (${waitSec}s)")
-                System.out.flush()
+                val future = CompletableFuture.supplyAsync {
+                    llmClient.chat(messages, grammar)
+                }
+                var waitSec = 0
+                while (!future.isDone) {
+                    try {
+                        future.get(10, TimeUnit.SECONDS)
+                        break
+                    } catch (e: java.util.concurrent.TimeoutException) {
+                        waitSec += 10
+                        println("  ... waiting LLM (${waitSec}s)")
+                        System.out.flush()
+                    }
+                }
+                return future.get()
+            } catch (e: Exception) {
+                lastEx = e
+                val isNetworkOrTimeout = e is java.net.SocketTimeoutException ||
+                        e.cause is java.net.SocketTimeoutException ||
+                        e.message?.contains("timed out", ignoreCase = true) == true ||
+                        e.message?.contains("SocketTimeout", ignoreCase = true) == true ||
+                        e.message?.contains("Connection refused", ignoreCase = true) == true
+                if (attempt == 1 && isNetworkOrTimeout) {
+                    println("  [LLM RETRY] Request timed out or network issue (${e.message}). Retrying once...")
+                    System.out.flush()
+                    Thread.sleep(1000)
+                    continue
+                }
+                throw e
             }
         }
-        return future.get()
+        throw lastEx ?: RuntimeException("Unknown LLM call error")
     }
 
     @Synchronized
@@ -347,9 +385,26 @@ class BenchmarkRunner(
 
     private fun formatDuration(ms: Long): String {
         val totalSec = ms / 1000
-        val min = totalSec / 60
+        val hr = totalSec / 3600
+        val min = (totalSec % 3600) / 60
         val sec = totalSec % 60
-        return if (min > 0) "${min}m ${sec}s" else "${sec}s"
+        return when {
+            hr > 0 -> "${hr}h ${min}m ${sec}s"
+            min > 0 -> "${min}m ${sec}s"
+            else -> "${sec}s"
+        }
+    }
+
+    private fun formatDurationEta(ms: Long): String {
+        val totalSec = ms / 1000
+        val hr = totalSec / 3600
+        val min = (totalSec % 3600) / 60
+        val sec = totalSec % 60
+        return when {
+            hr > 0 -> "${hr}h ${min}m"
+            min > 0 -> "${min}m ${sec}s"
+            else -> "${sec}s"
+        }
     }
 
     private fun isCompileOrSyntaxError(err: String): Boolean {
@@ -364,14 +419,42 @@ class BenchmarkRunner(
                 err.contains("Unexpected token", ignoreCase = true)
     }
 
+    private fun validateExecution(
+        profile: LanguageProfile,
+        task: BenchmarkTask,
+        rawResult: ExecutionResult,
+        emergencyTriggered: Boolean
+    ): ExecutionResult {
+        if (!rawResult.success) {
+            return rawResult
+        }
+
+        if (emergencyTriggered) {
+            return ExecutionResult(false, "WATCHDOG.emergencyStop() was unexpectedly triggered")
+        }
+
+        val output = rawResult.output.trim()
+        if (task.expectedKeywords.isNotEmpty()) {
+            if (output.isBlank()) {
+                return ExecutionResult(false, "Expected output containing ${task.expectedKeywords}, but stdout was empty")
+            }
+            val matched = task.expectedKeywords.any { kw -> output.contains(kw, ignoreCase = true) }
+            if (!matched) {
+                return ExecutionResult(false, "Expected output containing ${task.expectedKeywords}, but got: '$output'")
+            }
+        }
+
+        return ExecutionResult(true, null, rawResult.output)
+    }
+
     private fun executeCode(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
         return when (profile.id) {
             "tdscript_base", "tdscript_experimental" -> executeTdscript(profile, task, code)
-            "python" -> executePython(code)
-            "cpp" -> executeCpp(code)
-            "lua" -> executeLua(code)
-            "javascript" -> executeNode(code)
-            "kotlin" -> executeKotlin(code)
+            "python" -> executePython(profile, task, code)
+            "cpp" -> executeCpp(profile, task, code)
+            "lua" -> executeLua(profile, task, code)
+            "javascript" -> executeNode(profile, task, code)
+            "kotlin" -> executeKotlin(profile, task, code)
             else -> ExecutionResult(false, "Unknown profile: ${profile.id}")
         }
     }
@@ -406,18 +489,10 @@ class BenchmarkRunner(
                 return ExecutionResult(false, scopeError)
             }
 
+            val emergencyTriggered = sandbox.diagnosticLines.contains("EMERGENCY_STOP_TRIGGERED")
             val output = sandbox.stdoutLines.joinToString("\n")
-            if (task.expectedKeywords.isNotEmpty()) {
-                val matched = task.expectedKeywords.any { kw ->
-                    output.contains(kw, ignoreCase = true) ||
-                            interpreter.globals.values.any { it?.toString()?.contains(kw, ignoreCase = true) == true }
-                }
-                if (!matched && output.isEmpty() && interpreter.globals.isEmpty()) {
-                    return ExecutionResult(false, "Expected output containing ${task.expectedKeywords}, but got empty output")
-                }
-            }
-
-            ExecutionResult(true, null, output)
+            val raw = ExecutionResult(true, null, output)
+            validateExecution(profile, task, raw, emergencyTriggered)
         } catch (e: Exception) {
             ExecutionResult(false, "${e::class.simpleName}: ${e.message}")
         }
@@ -458,7 +533,7 @@ class BenchmarkRunner(
         return ProcessOutput(process.exitValue(), stdout, stderr, timedOut = false)
     }
 
-    private fun executePython(code: String): ExecutionResult {
+    private fun executePython(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
         val tempFile = File.createTempFile("bench_py_", ".py")
         return try {
             tempFile.writeText(code)
@@ -468,17 +543,19 @@ class BenchmarkRunner(
             if (out.timedOut) {
                 return ExecutionResult(false, "Python execution timed out (>5s)")
             }
-            if (out.exitCode != 0 || out.stderr.contains("Exception") || out.stderr.contains("Error")) {
+            val emergencyTriggered = out.stderr.contains("EMERGENCY_STOP_TRIGGERED") || out.stdout.contains("EMERGENCY_STOP_TRIGGERED")
+            if (out.exitCode != 0 || out.stderr.contains("Exception") || out.stderr.contains("Error") || out.stderr.contains("SCOPE_VIOLATION")) {
                 ExecutionResult(false, if (out.stderr.isNotEmpty()) out.stderr else out.stdout)
             } else {
-                ExecutionResult(true, null, out.stdout)
+                val raw = ExecutionResult(true, null, out.stdout)
+                validateExecution(profile, task, raw, emergencyTriggered)
             }
         } finally {
             tempFile.delete()
         }
     }
 
-    private fun executeCpp(code: String): ExecutionResult {
+    private fun executeCpp(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
         val tempSrc = File.createTempFile("bench_cpp_", ".cpp")
         val tempBin = File.createTempFile("bench_cpp_bin_", "")
         return try {
@@ -500,10 +577,12 @@ class BenchmarkRunner(
             if (runOut.timedOut) {
                 return ExecutionResult(false, "C++ execution timed out (>5s)")
             }
+            val emergencyTriggered = runOut.stderr.contains("EMERGENCY_STOP_TRIGGERED") || runOut.stdout.contains("EMERGENCY_STOP_TRIGGERED")
             if (runOut.exitCode != 0 || runOut.stderr.contains("Exception") || runOut.stderr.contains("SCOPE_VIOLATION")) {
                 ExecutionResult(false, if (runOut.stderr.isNotEmpty()) runOut.stderr else "Exit code: ${runOut.exitCode}")
             } else {
-                ExecutionResult(true, null, runOut.stdout)
+                val raw = ExecutionResult(true, null, runOut.stdout)
+                validateExecution(profile, task, raw, emergencyTriggered)
             }
         } finally {
             tempSrc.delete()
@@ -511,7 +590,7 @@ class BenchmarkRunner(
         }
     }
 
-    private fun executeNode(code: String): ExecutionResult {
+    private fun executeNode(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
         val tempFile = File.createTempFile("bench_js_", ".js", mocksDir)
         return try {
             tempFile.writeText(code)
@@ -522,17 +601,19 @@ class BenchmarkRunner(
             if (out.timedOut) {
                 return ExecutionResult(false, "Node.js execution timed out (>5s)")
             }
+            val emergencyTriggered = out.stderr.contains("EMERGENCY_STOP_TRIGGERED") || out.stdout.contains("EMERGENCY_STOP_TRIGGERED")
             if (out.exitCode != 0 || out.stderr.contains("Error") || out.stderr.contains("SCOPE_VIOLATION")) {
                 ExecutionResult(false, if (out.stderr.isNotEmpty()) out.stderr else out.stdout)
             } else {
-                ExecutionResult(true, null, out.stdout)
+                val raw = ExecutionResult(true, null, out.stdout)
+                validateExecution(profile, task, raw, emergencyTriggered)
             }
         } finally {
             tempFile.delete()
         }
     }
 
-    private fun executeLua(code: String): ExecutionResult {
+    private fun executeLua(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
         val tempFile = File.createTempFile("bench_lua_", ".lua")
         return try {
             tempFile.writeText(code)
@@ -542,17 +623,19 @@ class BenchmarkRunner(
             if (out.timedOut) {
                 return ExecutionResult(false, "Lua execution timed out (>5s)")
             }
+            val emergencyTriggered = out.stderr.contains("EMERGENCY_STOP_TRIGGERED") || out.stdout.contains("EMERGENCY_STOP_TRIGGERED")
             if (out.exitCode != 0 || out.stderr.contains("error") || out.stderr.contains("SCOPE_VIOLATION")) {
                 ExecutionResult(false, if (out.stderr.isNotEmpty()) out.stderr else out.stdout)
             } else {
-                ExecutionResult(true, null, out.stdout)
+                val raw = ExecutionResult(true, null, out.stdout)
+                validateExecution(profile, task, raw, emergencyTriggered)
             }
         } finally {
             tempFile.delete()
         }
     }
 
-    private fun executeKotlin(code: String): ExecutionResult {
+    private fun executeKotlin(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
         val tempSrc = File.createTempFile("bench_kt_", ".kt")
         val tempJar = File.createTempFile("bench_kt_", ".jar")
         return try {
@@ -575,10 +658,12 @@ class BenchmarkRunner(
             if (runOut.timedOut) {
                 return ExecutionResult(false, "Kotlin execution timed out (>5s)")
             }
+            val emergencyTriggered = runOut.stderr.contains("EMERGENCY_STOP_TRIGGERED") || runOut.stdout.contains("EMERGENCY_STOP_TRIGGERED")
             if (runOut.exitCode != 0 || runOut.stderr.contains("Exception") || runOut.stderr.contains("SCOPE_VIOLATION")) {
                 ExecutionResult(false, if (runOut.stderr.isNotEmpty()) runOut.stderr else "Exit code: ${runOut.exitCode}")
             } else {
-                ExecutionResult(true, null, runOut.stdout)
+                val raw = ExecutionResult(true, null, runOut.stdout)
+                validateExecution(profile, task, raw, emergencyTriggered)
             }
         } finally {
             tempSrc.delete()
@@ -593,6 +678,10 @@ class BenchmarkRunner(
                     "E104@14:5 exp=0x76|0x77 got=0x68"
                 } else if (rawError.contains("LSTRING")) {
                     "E105@10:3 exp=L\"KEY:{p}\" got=concat(+)"
+                } else if (rawError.contains("Expected output containing") || rawError.contains("stdout was empty")) {
+                    "E107@1:1 exp=stdout_match got=${rawError.take(45)}"
+                } else if (rawError.contains("emergencyStop")) {
+                    "E108@1:1 exp=normal_execution got=emergencyStop"
                 } else {
                     "E101@1:1 exp=valid_syntax got=${rawError.take(40)}"
                 }
@@ -600,6 +689,10 @@ class BenchmarkRunner(
             ErrorRepairStyle.FULL_JSON -> {
                 val diag = if (rawError.contains("SCOPE_VIOLATION")) {
                     DiagnosticError.scopeViolation(14, 5, "0x76 | 0x77", "0x68", rawError)
+                } else if (rawError.contains("Expected output containing")) {
+                    DiagnosticError("TDS_E107_OUTPUT_MISMATCH", 1, 1, rawError, "expected output", rawError.take(40))
+                } else if (rawError.contains("emergencyStop")) {
+                    DiagnosticError("TDS_E108_UNEXPECTED_EMERGENCY_STOP", 1, 1, rawError, "normal execution", "emergencyStop")
                 } else {
                     DiagnosticError("TDS_E101_SYNTAX_ERROR", 1, 1, rawError, "valid syntax", rawError.take(30))
                 }
@@ -663,9 +756,12 @@ class BenchmarkRunner(
         return if (file.exists()) file.readText() else null
     }
 
-    fun generateReportMarkdown(summaries: List<TargetBenchmarkSummary>): String {
+    fun generateReportMarkdown(
+        summaries: List<TargetBenchmarkSummary>,
+        reportTitle: String = "Global LLM Automation Benchmark Report (3B–9B Models)"
+    ): String {
         val sb = StringBuilder()
-        sb.append("# Global LLM Automation Benchmark Report (3B–9B Models)\n\n")
+        sb.append("# $reportTitle\n\n")
         sb.append("Objective benchmark comparing **${summaries.size} target languages/runtimes** across 10 identical hardware and network orchestration tasks.\n\n")
 
         sb.append("## Summary Comparison Table\n\n")

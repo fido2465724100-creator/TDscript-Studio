@@ -17,16 +17,16 @@ fun main(args: Array<String>) {
         ?: ""
 
     val reportPath = args.find { it.startsWith("--out=") }?.substringAfter("--out=")
-        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT.md"
+        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT_TEST3.md"
 
     val maxTokens = args.find { it.startsWith("--max-tokens=") }?.substringAfter("--max-tokens=")?.toIntOrNull()
         ?: 1000
 
     val failuresLogPath = args.find { it.startsWith("--failures-out=") }?.substringAfter("--failures-out=")
-        ?: "/home/anton/TDscript-Studio/benchmark_failures.log"
+        ?: "/home/anton/TDscript-Studio/benchmark_failures_test3.log"
 
     val tracePath = args.find { it.startsWith("--trace-out=") }?.substringAfter("--trace-out=")
-        ?: "/home/anton/TDscript-Studio/benchmark_full_trace.jsonl"
+        ?: "/home/anton/TDscript-Studio/benchmark_full_trace_test3.jsonl"
 
     val enableGbnf = args.any { it == "--use-gbnf" }
 
@@ -77,7 +77,7 @@ fun main(args: Array<String>) {
     )
     val summaries = runner.runBenchmark()
 
-    val markdown = runner.generateReportMarkdown(summaries)
+    val markdown = runner.generateReportMarkdown(summaries, "TDscript Global LLM Benchmark — Тест №3 (Test #3)")
     File(reportPath).writeText(markdown)
 
     println("--------------------------------------------------------------------------------")
