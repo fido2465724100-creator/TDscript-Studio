@@ -203,9 +203,14 @@ class BenchmarkRunnerTest {
     @Test
     fun testDryRunExecutionAndReportGeneration() {
         val mockLlm = MockBenchmarkLlm()
+        val dryRunReport = File("build/dry_run_report.md")
+        val dryRunFailures = File("build/dry_run_failures.log")
+        dryRunReport.parentFile?.mkdirs()
+
         val runner = BenchmarkRunner(
             llmClient = mockLlm,
-            mocksDir = File("/home/anton/TDscript-Studio/benchmark/mocks")
+            mocksDir = File("/home/anton/TDscript-Studio/benchmark/mocks"),
+            failuresLogFile = dryRunFailures
         )
 
         val summaries = runner.runBenchmark()
@@ -235,9 +240,9 @@ class BenchmarkRunnerTest {
         assertTrue(report.contains("JavaScript (Node.js)"))
         assertTrue(report.contains("Kotlin"))
 
-        // Save report to file for user inspection
-        File("/home/anton/TDscript-Studio/BENCHMARK_REPORT.md").writeText(report)
-        assertTrue(File("/home/anton/TDscript-Studio/BENCHMARK_REPORT.md").exists())
+        // Save report strictly to build/dry_run_report.md (never overwriting root BENCHMARK_REPORT.md)
+        dryRunReport.writeText(report)
+        assertTrue(dryRunReport.exists())
     }
 
     @Test

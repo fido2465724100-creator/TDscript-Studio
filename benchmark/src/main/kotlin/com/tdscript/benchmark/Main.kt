@@ -17,10 +17,15 @@ fun main(args: Array<String>) {
         ?: ""
 
     val reportPath = args.find { it.startsWith("--out=") }?.substringAfter("--out=")
-        ?: "BENCHMARK_REPORT.md"
+        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT.md"
 
     val maxTokens = args.find { it.startsWith("--max-tokens=") }?.substringAfter("--max-tokens=")?.toIntOrNull()
-        ?: 350
+        ?: 800
+
+    val failuresLogPath = args.find { it.startsWith("--failures-out=") }?.substringAfter("--failures-out=")
+        ?: "/home/anton/TDscript-Studio/benchmark_failures.log"
+
+    val enableGbnf = args.any { it == "--use-gbnf" }
 
     val tasksArg = args.find { it.startsWith("--tasks=") }?.substringAfter("--tasks=")
     val selectedTasks = if (tasksArg != null && tasksArg != "all") {
@@ -43,9 +48,12 @@ fun main(args: Array<String>) {
     println("================================================================================")
     println("Endpoint : $baseUrl")
     println("Model    : $model")
+    println("MaxTokens: $maxTokens")
     println("Tasks    : ${selectedTasks.size} tasks (${selectedTasks.map { it.id }})")
     println("Profiles : ${selectedProfiles.size} profiles (${selectedProfiles.map { it.id }})")
     println("Output   : $reportPath")
+    println("Failures : $failuresLogPath")
+    println("GBNF     : $enableGbnf")
     println("--------------------------------------------------------------------------------")
 
     val client = OpenAiCompatibleLlmClient(
@@ -58,7 +66,9 @@ fun main(args: Array<String>) {
     val runner = BenchmarkRunner(
         llmClient = client,
         tasks = selectedTasks,
-        profiles = selectedProfiles
+        profiles = selectedProfiles,
+        failuresLogFile = File(failuresLogPath),
+        enableGbnf = enableGbnf
     )
     val summaries = runner.runBenchmark()
 

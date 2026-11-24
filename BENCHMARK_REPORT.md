@@ -6,17 +6,17 @@ Objective benchmark comparing **7 target languages/runtimes** across 10 identica
 
 | Target | Status | First-Pass % | Final Success % | Avg Repair Iters | Total Prompt Tokens | Total Completion Tokens | Avg LOC |
 |:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **TDscript Base (v1.4.0)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 3105 | 629 | 4,8 |
-| **TDscript Experimental (AI-First)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 3171 | 638 | 4,8 |
-| **Python** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2763 | 598 | 4,8 |
-| **C++ (Arduino/ESP32 style)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2946 | 709 | 7,8 |
-| **Lua** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2490 | 604 | 4,8 |
-| **JavaScript (Node.js)** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2857 | 703 | 4,8 |
-| **Kotlin** | `COMPLETED` | 90,0% | 100,0% | 0,10 | 2786 | 680 | 6,8 |
+| **TDscript Base (v1.4.0)** | `COMPLETED` | 20.0% | 90.0% | 1.00 | 16731 | 13195 | 5.8 |
+| **TDscript Experimental (AI-First)** | `COMPLETED` | 20.0% | 100.0% | 0.90 | 13751 | 9751 | 6.8 |
+| **Python** | `COMPLETED` | 100.0% | 100.0% | 0.00 | 2589 | 6577 | 0.6 |
+| **C++ (Arduino/ESP32 style)** | `COMPLETED` | 10.0% | 80.0% | 1.13 | 19797 | 10725 | 14.9 |
+| **Lua** | `COMPLETED` | 80.0% | 90.0% | 0.11 | 4842 | 3612 | 8.6 |
+| **JavaScript (Node.js)** | `COMPLETED` | 70.0% | 90.0% | 0.33 | 6938 | 2410 | 10.9 |
+| **Kotlin** | `COMPLETED` | 60.0% | 100.0% | 0.50 | 5466 | 1907 | 12.7 |
 
 ---
 
-## Task Details & Descriptions
+## Task Details & Verification Criteria
 
 ### Task 1: BME280 Chip ID Read
 - **Description**: Read Bosch BME280 Chip ID via I2C (address 0x76, register 0xD0, length 1 byte) and print the result.
@@ -58,8 +58,3 @@ Objective benchmark comparing **7 target languages/runtimes** across 10 identica
 - **Description**: Operate strictly within granted CapabilityScope (I2C allowed only on 0x76, Modbus registers 100..200). If forbidden address (e.g. 0x68) is attempted, catch or self-repair to 0x76.
 - **Verification**: Checks for [0x76]
 
-## Key Architecture Insights
-
-1. **TDscript Experimental (AI-First)**: Achieves lowest token usage during the auto-repair loop due to compact `E104@line:col exp=... got=...` single-line formatting.
-2. **Determinism & Safety**: TDscript runs in-process with strict step counter (`maxSteps`) and address-level `CapabilityScope` without needing heavy external OS sandboxing.
-3. **Cross-Language Adaptability**: Python and JavaScript have rich ecosystem support, while TDscript offers zero VRAM footprint and deterministic execution.

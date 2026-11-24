@@ -45,6 +45,7 @@ data class LanguageProfile(
                       BT.send(data) -> Boolean
                       BT.readLine() -> String
                       LString: L"ALERT_TEMP:Temperature is {temp}" (never concatenate with +)
+                    NOTE: No user-defined functions (no fn/def/function); write sequential script statements.
                     Return ONLY executable code inside ```tdscript ``` blocks.
                 """.trimIndent(),
                 mockSignatures = "TDscript Core 1.1 Standard Runtime"
@@ -54,7 +55,7 @@ data class LanguageProfile(
                 displayName = "TDscript Experimental (AI-First)",
                 runtimeCommand = null,
                 errorRepairStyle = ErrorRepairStyle.COMPACT_REPAIR_LINE,
-                useGbnf = true,
+                useGbnf = false,
                 fileExtension = "tds",
                 systemPromptHeader = """
                     You are an expert TDscript AI-First automation engineer.
@@ -65,9 +66,10 @@ data class LanguageProfile(
                       if (<cond>) { ... } else { ... }
                       while (<cond>) { ... }
                       print(<expr>);
+                    NOTE: No user-defined functions (no fn/def/function); write sequential script statements.
                     Subsystems (hex literals allowed):
                       I2C.read(0x76, 0xD0, 1) -> ByteArray
-                      I2C.write(0x76, 0xF4, data) -> Boolean
+                      I2C.write(0x76, 0xF4, 1) -> Boolean
                       PLC.modbusRead("127.0.0.1", 100) -> Int
                       PLC.modbusWrite("127.0.0.1", 101, 0) -> Boolean
                       WATCHDOG.feed() -> Boolean
@@ -77,6 +79,23 @@ data class LanguageProfile(
                       BT.send("READ") -> Boolean
                       BT.readLine() -> String
                       LString: L"ALERT_TEMP:Temperature is {temp}" (never concatenate with +)
+
+                    Examples:
+                    Example 1 (I2C read with hex literal):
+                    ```tdscript
+                    let chipId = I2C.read(0x76, 0xD0, 1);
+                    print(chipId);
+                    ```
+
+                    Example 2 (Loop with Watchdog feed):
+                    ```tdscript
+                    var i = 0;
+                    while (i < 5) {
+                        WATCHDOG.feed();
+                        i = i + 1;
+                    }
+                    ```
+
                     Return ONLY executable code inside ```tdscript ``` blocks.
                 """.trimIndent(),
                 mockSignatures = "TDscript Core 1.1 AI-First Runtime with GBNF & Hex"
@@ -91,6 +110,7 @@ data class LanguageProfile(
                 systemPromptHeader = """
                     You are an expert Python automation developer.
                     Import mock hardware: from mock_hw import I2C, PLC, WATCHDOG, NET, BT
+                    Do not write an infinite loop (no while True); execute sequentially and terminate.
                     Return ONLY executable code inside ```python ``` blocks.
                 """.trimIndent(),
                 mockSignatures = """
@@ -118,6 +138,7 @@ data class LanguageProfile(
                     You are an expert C++ embedded automation developer.
                     Include header: #include "mock_hw.hpp"
                     Provide a full main() function: int main() { ... return 0; }
+                    Do not write an infinite loop (no while(true)); execute sequentially and return 0.
                     Return ONLY executable code inside ```cpp ``` blocks.
                 """.trimIndent(),
                 mockSignatures = """
@@ -144,6 +165,7 @@ data class LanguageProfile(
                 systemPromptHeader = """
                     You are an expert Lua automation developer.
                     Load mock: local hw = require("mock_hw")
+                    Do not write an infinite loop; execute sequentially and terminate.
                     Return ONLY executable code inside ```lua ``` blocks.
                 """.trimIndent(),
                 mockSignatures = """
@@ -170,6 +192,7 @@ data class LanguageProfile(
                 systemPromptHeader = """
                     You are an expert Node.js automation developer.
                     Import mock: const { I2C, PLC, WATCHDOG, NET, BT } = require('./mock_hw');
+                    Do not write an infinite loop; execute sequentially and terminate.
                     Return ONLY executable code inside ```javascript ``` blocks.
                 """.trimIndent(),
                 mockSignatures = """
@@ -197,6 +220,7 @@ data class LanguageProfile(
                     You are an expert Kotlin embedded/JVM developer.
                     Import mock: import com.tdscript.benchmark.mock.*
                     Provide a fun main() { ... }
+                    Do not write an infinite loop; execute sequentially and terminate.
                     Return ONLY executable code inside ```kotlin ``` blocks.
                 """.trimIndent(),
                 mockSignatures = """

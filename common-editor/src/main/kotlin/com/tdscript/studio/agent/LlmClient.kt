@@ -20,6 +20,7 @@ data class ChatResponse(
 
 interface LlmClient {
     fun chat(messages: List<ChatMessage>): ChatResponse
+    fun chat(messages: List<ChatMessage>, grammar: String?): ChatResponse = chat(messages)
 }
 
 /**
@@ -33,10 +34,14 @@ class OpenAiCompatibleLlmClient(
     val modelName: String = "llama3",
     val apiKey: String = "",
     val timeoutMs: Int = 120_000,
-    val maxTokens: Int = 400
+    val maxTokens: Int = 800
 ) : LlmClient {
 
     override fun chat(messages: List<ChatMessage>): ChatResponse {
+        return chat(messages, null)
+    }
+
+    override fun chat(messages: List<ChatMessage>, grammar: String?): ChatResponse {
         val endpoint = "${baseUrl.trimEnd('/')}/chat/completions"
         val url = URL(endpoint)
         val conn = url.openConnection() as HttpURLConnection
@@ -51,7 +56,7 @@ class OpenAiCompatibleLlmClient(
             conn.setRequestProperty("Authorization", "Bearer $apiKey")
         }
 
-        val requestBody = buildJsonPayload(messages)
+        val requestBody = buildJsonPayload(messages, grammar)
 
         OutputStreamWriter(conn.outputStream, StandardCharsets.UTF_8).use { writer ->
             writer.write(requestBody)
@@ -73,11 +78,14 @@ class OpenAiCompatibleLlmClient(
         return ChatResponse(content = extractedContent, rawJson = responseText, model = modelName)
     }
 
-    private fun buildJsonPayload(messages: List<ChatMessage>): String {
+    private fun buildJsonPayload(messages: List<ChatMessage>, grammar: String? = null): String {
         val messagesJson = messages.joinToString(",") { msg ->
             """{"role":"${escapeJson(msg.role)}","content":"${escapeJson(msg.content)}"}"""
         }
-        return """{"model":"${escapeJson(modelName)}","messages":[$messagesJson],"temperature":0.1,"max_tokens":$maxTokens}"""
+        val grammarField = if (!grammar.isNullOrBlank()) {
+            ""","grammar":"${escapeJson(grammar)}""""
+        } else ""
+        return """{"model":"${escapeJson(modelName)}","messages":[$messagesJson],"temperature":0.1,"max_tokens":$maxTokens$grammarField}"""
     }
 
     private fun escapeJson(s: String): String {
@@ -105,20 +113,31 @@ class OpenAiCompatibleLlmClient(
 
     companion object {
         fun parseContentFromResponse(json: String): String {
-            val contentIdx = json.indexOf("\"content\"")
-            if (contentIdx == -1) return json
+            val content = extractJsonField(json, "content")
+            val raw = if (content.isNotBlank()) content else extractJsonField(json, "reasoning_content")
+            val stripped = raw.replace(Regex("""<think>[\s\S]*?</think>"""), "").trim()
+            return if (stripped.isNotBlank()) stripped else raw.trim()
+        }
 
-            val colonIdx = json.indexOf(':', contentIdx + 9)
-            if (colonIdx == -1) return json
+        fun extractJsonField(json: String, fieldName: String): String {
+            val key = "\"$fieldName\""
+            val fieldIdx = json.indexOf(key)
+            if (fieldIdx == -1) return ""
+
+            val colonIdx = json.indexOf(':', fieldIdx + key.length)
+            if (colonIdx == -1) return ""
 
             var startQuote = -1
             for (i in colonIdx + 1 until json.length) {
-                if (json[i] == '"') {
+                val c = json[i]
+                if (c == '"') {
                     startQuote = i
                     break
+                } else if (!c.isWhitespace()) {
+                    return ""
                 }
             }
-            if (startQuote == -1) return json
+            if (startQuote == -1) return ""
 
             val sb = StringBuilder()
             var i = startQuote + 1

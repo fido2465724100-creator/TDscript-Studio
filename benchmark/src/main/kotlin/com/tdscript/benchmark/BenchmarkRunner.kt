@@ -6,17 +6,27 @@ import com.tdscript.studio.agent.ChatResponse
 import com.tdscript.studio.agent.LlmClient
 import com.tdscript.studio.sandbox.AiHardwareSandbox
 import java.io.File
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class BenchmarkRunner(
     private val llmClient: LlmClient,
     private val mocksDir: File = File("/home/anton/TDscript-Studio/benchmark/mocks"),
     private val tasks: List<BenchmarkTask> = BenchmarkTask.ALL_TASKS,
-    private val profiles: List<LanguageProfile> = LanguageProfile.ALL_PROFILES
+    private val profiles: List<LanguageProfile> = LanguageProfile.ALL_PROFILES,
+    private val failuresLogFile: File = File("/home/anton/TDscript-Studio/benchmark_failures.log"),
+    private val enableGbnf: Boolean = false
 ) {
 
     fun runBenchmark(): List<TargetBenchmarkSummary> {
         val summaries = mutableListOf<TargetBenchmarkSummary>()
+
+        try {
+            failuresLogFile.parentFile?.mkdirs()
+            failuresLogFile.writeText("=== TDscript Benchmark Failures Log ===\nStarted: ${java.time.Instant.now()}\n\n")
+        } catch (e: Exception) {
+            System.err.println("Failed to initialize failures log: ${e.message}")
+        }
 
         for (profile in profiles) {
             println("▶ Starting benchmark for: ${profile.displayName}")
@@ -95,7 +105,7 @@ class BenchmarkRunner(
             Target Language: ${profile.displayName}
             Available API:
             ${profile.mockSignatures}
-            Write the complete script to solve this task.
+            Write a complete, concise script to solve this task.
         """.trimIndent()
 
         messages.add(ChatMessage("user", initialUserPrompt))
@@ -117,9 +127,11 @@ class BenchmarkRunner(
             totalPromptTokens += promptTokensThisTurn
 
             val response = try {
-                llmClient.chat(messages).content
+                val grammar = if (profile.useGbnf && enableGbnf) loadGbnfGrammar() else null
+                llmClient.chat(messages, grammar).content
             } catch (e: Exception) {
                 lastError = "LLM invocation error: ${e.message}"
+                logFailure(profile, task, attempts, "", lastError ?: "")
                 break
             }
 
@@ -142,10 +154,11 @@ class BenchmarkRunner(
             } else {
                 lastError = execResult.error
                 val formattedError = formatErrorForRepair(profile, execResult.error ?: "Unknown execution error")
+                logFailure(profile, task, attempts, code, formattedError)
                 messages.add(
                     ChatMessage(
                         "user",
-                        "Your code failed verification with the following error:\n$formattedError\nFix the issue and provide the complete corrected script."
+                        "Your code failed verification with the following error:\n$formattedError\nFix the issue and provide the complete, concise corrected script."
                     )
                 )
             }
@@ -223,24 +236,55 @@ class BenchmarkRunner(
         }
     }
 
+    data class ProcessOutput(val exitCode: Int, val stdout: String, val stderr: String, val timedOut: Boolean)
+
+    private fun runProcess(pb: ProcessBuilder, timeoutSeconds: Long = 5): ProcessOutput {
+        val process = pb.start()
+        val stdoutFuture = CompletableFuture.supplyAsync {
+            try {
+                process.inputStream.bufferedReader().use { it.readText() }
+            } catch (e: Exception) {
+                ""
+            }
+        }
+        val stderrFuture = CompletableFuture.supplyAsync {
+            try {
+                process.errorStream.bufferedReader().use { it.readText() }
+            } catch (e: Exception) {
+                ""
+            }
+        }
+        val exited = process.waitFor(timeoutSeconds, TimeUnit.SECONDS)
+        if (!exited) {
+            process.destroyForcibly()
+            try {
+                process.waitFor(1, TimeUnit.SECONDS)
+            } catch (e: Exception) {}
+            stdoutFuture.cancel(true)
+            stderrFuture.cancel(true)
+            val partialOut = try { stdoutFuture.getNow("") } catch (e: Exception) { "" }
+            val partialErr = try { stderrFuture.getNow("") } catch (e: Exception) { "" }
+            return ProcessOutput(-1, partialOut, partialErr, timedOut = true)
+        }
+        val stdout = try { stdoutFuture.get(2, TimeUnit.SECONDS) } catch (e: Exception) { "" }
+        val stderr = try { stderrFuture.get(2, TimeUnit.SECONDS) } catch (e: Exception) { "" }
+        return ProcessOutput(process.exitValue(), stdout, stderr, timedOut = false)
+    }
+
     private fun executePython(code: String): ExecutionResult {
         val tempFile = File.createTempFile("bench_py_", ".py")
         return try {
             tempFile.writeText(code)
             val pb = ProcessBuilder("python3", tempFile.absolutePath)
             pb.environment()["PYTHONPATH"] = mocksDir.absolutePath
-            val process = pb.start()
-            val stdout = process.inputStream.bufferedReader().readText()
-            val stderr = process.errorStream.bufferedReader().readText()
-            val exited = process.waitFor(5, TimeUnit.SECONDS)
-            if (!exited) {
-                process.destroyForcibly()
+            val out = runProcess(pb, 5)
+            if (out.timedOut) {
                 return ExecutionResult(false, "Python execution timed out (>5s)")
             }
-            if (process.exitValue() != 0 || stderr.contains("Exception") || stderr.contains("Error")) {
-                ExecutionResult(false, if (stderr.isNotEmpty()) stderr else stdout)
+            if (out.exitCode != 0 || out.stderr.contains("Exception") || out.stderr.contains("Error")) {
+                ExecutionResult(false, if (out.stderr.isNotEmpty()) out.stderr else out.stdout)
             } else {
-                ExecutionResult(true, null, stdout)
+                ExecutionResult(true, null, out.stdout)
             }
         } finally {
             tempFile.delete()
@@ -256,25 +300,23 @@ class BenchmarkRunner(
                 "g++", "-std=c++17", "-I", mocksDir.absolutePath,
                 tempSrc.absolutePath, "-o", tempBin.absolutePath
             )
-            val compileProc = compilePb.start()
-            val compileErr = compileProc.errorStream.bufferedReader().readText()
-            if (compileProc.waitFor() != 0) {
-                return ExecutionResult(false, "C++ Compilation error:\n$compileErr")
+            val compileOut = runProcess(compilePb, 10)
+            if (compileOut.timedOut) {
+                return ExecutionResult(false, "C++ Compilation timed out (>10s)")
+            }
+            if (compileOut.exitCode != 0) {
+                return ExecutionResult(false, "C++ Compilation error:\n${compileOut.stderr}")
             }
 
             val runPb = ProcessBuilder(tempBin.absolutePath)
-            val runProc = runPb.start()
-            val stdout = runProc.inputStream.bufferedReader().readText()
-            val stderr = runProc.errorStream.bufferedReader().readText()
-            val exited = runProc.waitFor(5, TimeUnit.SECONDS)
-            if (!exited) {
-                runProc.destroyForcibly()
+            val runOut = runProcess(runPb, 5)
+            if (runOut.timedOut) {
                 return ExecutionResult(false, "C++ execution timed out (>5s)")
             }
-            if (runProc.exitValue() != 0 || stderr.contains("Exception") || stderr.contains("SCOPE_VIOLATION")) {
-                ExecutionResult(false, if (stderr.isNotEmpty()) stderr else "Exit code: ${runProc.exitValue()}")
+            if (runOut.exitCode != 0 || runOut.stderr.contains("Exception") || runOut.stderr.contains("SCOPE_VIOLATION")) {
+                ExecutionResult(false, if (runOut.stderr.isNotEmpty()) runOut.stderr else "Exit code: ${runOut.exitCode}")
             } else {
-                ExecutionResult(true, null, stdout)
+                ExecutionResult(true, null, runOut.stdout)
             }
         } finally {
             tempSrc.delete()
@@ -289,18 +331,14 @@ class BenchmarkRunner(
             val pb = ProcessBuilder("node", tempFile.name)
             pb.directory(mocksDir)
             pb.environment()["NODE_PATH"] = mocksDir.absolutePath
-            val process = pb.start()
-            val stdout = process.inputStream.bufferedReader().readText()
-            val stderr = process.errorStream.bufferedReader().readText()
-            val exited = process.waitFor(5, TimeUnit.SECONDS)
-            if (!exited) {
-                process.destroyForcibly()
+            val out = runProcess(pb, 5)
+            if (out.timedOut) {
                 return ExecutionResult(false, "Node.js execution timed out (>5s)")
             }
-            if (process.exitValue() != 0 || stderr.contains("Error") || stderr.contains("SCOPE_VIOLATION")) {
-                ExecutionResult(false, if (stderr.isNotEmpty()) stderr else stdout)
+            if (out.exitCode != 0 || out.stderr.contains("Error") || out.stderr.contains("SCOPE_VIOLATION")) {
+                ExecutionResult(false, if (out.stderr.isNotEmpty()) out.stderr else out.stdout)
             } else {
-                ExecutionResult(true, null, stdout)
+                ExecutionResult(true, null, out.stdout)
             }
         } finally {
             tempFile.delete()
@@ -313,18 +351,14 @@ class BenchmarkRunner(
             tempFile.writeText(code)
             val pb = ProcessBuilder("lua", tempFile.absolutePath)
             pb.environment()["LUA_PATH"] = "${mocksDir.absolutePath}/?.lua;;"
-            val process = pb.start()
-            val stdout = process.inputStream.bufferedReader().readText()
-            val stderr = process.errorStream.bufferedReader().readText()
-            val exited = process.waitFor(5, TimeUnit.SECONDS)
-            if (!exited) {
-                process.destroyForcibly()
+            val out = runProcess(pb, 5)
+            if (out.timedOut) {
                 return ExecutionResult(false, "Lua execution timed out (>5s)")
             }
-            if (process.exitValue() != 0 || stderr.contains("error") || stderr.contains("SCOPE_VIOLATION")) {
-                ExecutionResult(false, if (stderr.isNotEmpty()) stderr else stdout)
+            if (out.exitCode != 0 || out.stderr.contains("error") || out.stderr.contains("SCOPE_VIOLATION")) {
+                ExecutionResult(false, if (out.stderr.isNotEmpty()) out.stderr else out.stdout)
             } else {
-                ExecutionResult(true, null, stdout)
+                ExecutionResult(true, null, out.stdout)
             }
         } finally {
             tempFile.delete()
@@ -341,25 +375,23 @@ class BenchmarkRunner(
                 "${mocksDir.absolutePath}/mock_hw.kt",
                 "-include-runtime", "-d", tempJar.absolutePath
             )
-            val compileProc = compilePb.start()
-            val compileErr = compileProc.errorStream.bufferedReader().readText()
-            if (compileProc.waitFor() != 0) {
-                return ExecutionResult(false, "Kotlinc Compilation error:\n$compileErr")
+            val compileOut = runProcess(compilePb, 30)
+            if (compileOut.timedOut) {
+                return ExecutionResult(false, "Kotlinc Compilation timed out (>30s)")
+            }
+            if (compileOut.exitCode != 0) {
+                return ExecutionResult(false, "Kotlinc Compilation error:\n${compileOut.stderr}")
             }
 
             val runPb = ProcessBuilder("java", "-jar", tempJar.absolutePath)
-            val runProc = runPb.start()
-            val stdout = runProc.inputStream.bufferedReader().readText()
-            val stderr = runProc.errorStream.bufferedReader().readText()
-            val exited = runProc.waitFor(5, TimeUnit.SECONDS)
-            if (!exited) {
-                runProc.destroyForcibly()
+            val runOut = runProcess(runPb, 5)
+            if (runOut.timedOut) {
                 return ExecutionResult(false, "Kotlin execution timed out (>5s)")
             }
-            if (runProc.exitValue() != 0 || stderr.contains("Exception") || stderr.contains("SCOPE_VIOLATION")) {
-                ExecutionResult(false, if (stderr.isNotEmpty()) stderr else "Exit code: ${runProc.exitValue()}")
+            if (runOut.exitCode != 0 || runOut.stderr.contains("Exception") || runOut.stderr.contains("SCOPE_VIOLATION")) {
+                ExecutionResult(false, if (runOut.stderr.isNotEmpty()) runOut.stderr else "Exit code: ${runOut.exitCode}")
             } else {
-                ExecutionResult(true, null, stdout)
+                ExecutionResult(true, null, runOut.stdout)
             }
         } finally {
             tempSrc.delete()
@@ -391,47 +423,67 @@ class BenchmarkRunner(
     }
 
     private fun extractCodeBlock(text: String, ext: String): String {
+        val cleanedText = text.replace(Regex("""<think>[\s\S]*?</think>"""), "").trim()
         val fencePattern = Regex("""```(?:\w+)?\s*([\s\S]*?)```""")
-        val match = fencePattern.find(text)
+        val match = fencePattern.find(cleanedText)
         return if (match != null) {
             match.groupValues[1].trim()
         } else {
-            text.trim()
+            cleanedText
         }
+    }
+
+    private fun logFailure(profile: LanguageProfile, task: BenchmarkTask, attempt: Int, code: String, error: String) {
+        val entry = buildString {
+            appendLine("--------------------------------------------------------------------------------")
+            appendLine("[FAILURE] Target: ${profile.displayName} | Task: ${task.id} (${task.title}) | Attempt: $attempt/3")
+            appendLine("Timestamp: ${java.time.Instant.now()}")
+            appendLine("--- RAW GENERATED CODE ---")
+            appendLine(code.ifBlank { "<EMPTY CODE>" })
+            appendLine("--- ERROR / DIAGNOSTIC SENT TO LLM ---")
+            appendLine(error)
+            appendLine("--------------------------------------------------------------------------------")
+            appendLine()
+        }
+        try {
+            failuresLogFile.appendText(entry)
+        } catch (e: Exception) {
+            System.err.println("Failed to write to failures log: ${e.message}")
+        }
+    }
+
+    private fun loadGbnfGrammar(): String? {
+        val file = File("/home/anton/TDModules/docs/tdscript-core-1.1.gbnf")
+        return if (file.exists()) file.readText() else null
     }
 
     fun generateReportMarkdown(summaries: List<TargetBenchmarkSummary>): String {
         val sb = StringBuilder()
         sb.append("# Global LLM Automation Benchmark Report (3B–9B Models)\n\n")
-        sb.append("Objective benchmark comparing **7 target languages/runtimes** across 10 identical hardware and network orchestration tasks.\n\n")
+        sb.append("Objective benchmark comparing **${summaries.size} target languages/runtimes** across 10 identical hardware and network orchestration tasks.\n\n")
 
         sb.append("## Summary Comparison Table\n\n")
         sb.append("| Target | Status | First-Pass % | Final Success % | Avg Repair Iters | Total Prompt Tokens | Total Completion Tokens | Avg LOC |\n")
         sb.append("|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|\n")
 
         for (s in summaries) {
-            val firstPassStr = if (s.status == "COMPLETED") String.format("%.1f%%", s.firstPassPct) else "—"
-            val finalSuccessStr = if (s.status == "COMPLETED") String.format("%.1f%%", s.finalSuccessPct) else "—"
-            val avgRepairStr = if (s.status == "COMPLETED") String.format("%.2f", s.avgRepairIters) else "—"
+            val firstPassStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.1f%%", s.firstPassPct) else "—"
+            val finalSuccessStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.1f%%", s.finalSuccessPct) else "—"
+            val avgRepairStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.2f", s.avgRepairIters) else "—"
             val promptTokensStr = if (s.status == "COMPLETED") "${s.totalPromptTokens}" else "—"
             val completionTokensStr = if (s.status == "COMPLETED") "${s.totalCompletionTokens}" else "—"
-            val avgLocStr = if (s.status == "COMPLETED") String.format("%.1f", s.avgLoc) else "—"
+            val avgLocStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.1f", s.avgLoc) else "—"
 
             sb.append("| **${s.profile.displayName}** | `${s.status}` | $firstPassStr | $finalSuccessStr | $avgRepairStr | $promptTokensStr | $completionTokensStr | $avgLocStr |\n")
         }
 
         sb.append("\n---\n\n")
-        sb.append("## Task Details & Descriptions\n\n")
+        sb.append("## Task Details & Verification Criteria\n\n")
         for (task in tasks) {
             sb.append("### Task ${task.id}: ${task.title}\n")
             sb.append("- **Description**: ${task.description}\n")
             sb.append("- **Verification**: Checks for ${task.expectedKeywords}\n\n")
         }
-
-        sb.append("## Key Architecture Insights\n\n")
-        sb.append("1. **TDscript Experimental (AI-First)**: Achieves lowest token usage during the auto-repair loop due to compact `E104@line:col exp=... got=...` single-line formatting.\n")
-        sb.append("2. **Determinism & Safety**: TDscript runs in-process with strict step counter (`maxSteps`) and address-level `CapabilityScope` without needing heavy external OS sandboxing.\n")
-        sb.append("3. **Cross-Language Adaptability**: Python and JavaScript have rich ecosystem support, while TDscript offers zero VRAM footprint and deterministic execution.\n")
 
         return sb.toString()
     }
