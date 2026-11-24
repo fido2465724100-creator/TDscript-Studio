@@ -14,6 +14,7 @@ data class ChatMessage(
 
 data class ChatResponse(
     val content: String,
+    val reasoningText: String? = null,
     val rawJson: String? = null,
     val model: String? = null
 )
@@ -34,7 +35,7 @@ class OpenAiCompatibleLlmClient(
     val modelName: String = "llama3",
     val apiKey: String = "",
     val timeoutMs: Int = 120_000,
-    val maxTokens: Int = 800
+    val maxTokens: Int = 1000
 ) : LlmClient {
 
     override fun chat(messages: List<ChatMessage>): ChatResponse {
@@ -74,8 +75,8 @@ class OpenAiCompatibleLlmClient(
             throw RuntimeException("LLM request failed (HTTP $responseCode): $responseText")
         }
 
-        val extractedContent = parseContentFromResponse(responseText)
-        return ChatResponse(content = extractedContent, rawJson = responseText, model = modelName)
+        val (extractedContent, reasoning) = parseResponse(responseText)
+        return ChatResponse(content = extractedContent, reasoningText = reasoning, rawJson = responseText, model = modelName)
     }
 
     private fun buildJsonPayload(messages: List<ChatMessage>, grammar: String? = null): String {
@@ -112,11 +113,30 @@ class OpenAiCompatibleLlmClient(
     }
 
     companion object {
+        fun parseResponse(json: String): Pair<String, String?> {
+            val contentField = extractJsonField(json, "content")
+            val reasoningField = extractJsonField(json, "reasoning_content")
+
+            val thinkRegex = Regex("""<think>([\s\S]*?)</think>""")
+            val thinkMatch = thinkRegex.find(contentField)
+
+            val reasoning = when {
+                reasoningField.isNotBlank() -> reasoningField.trim()
+                thinkMatch != null -> thinkMatch.groupValues[1].trim()
+                else -> null
+            }
+
+            val cleanContent = if (thinkMatch != null) {
+                contentField.replace(thinkRegex, "").trim()
+            } else {
+                contentField.trim()
+            }
+
+            return Pair(cleanContent, reasoning)
+        }
+
         fun parseContentFromResponse(json: String): String {
-            val content = extractJsonField(json, "content")
-            val raw = if (content.isNotBlank()) content else extractJsonField(json, "reasoning_content")
-            val stripped = raw.replace(Regex("""<think>[\s\S]*?</think>"""), "").trim()
-            return if (stripped.isNotBlank()) stripped else raw.trim()
+            return parseResponse(json).first
         }
 
         fun extractJsonField(json: String, fieldName: String): String {

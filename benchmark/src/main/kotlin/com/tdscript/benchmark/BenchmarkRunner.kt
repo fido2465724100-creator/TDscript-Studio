@@ -6,6 +6,8 @@ import com.tdscript.studio.agent.ChatResponse
 import com.tdscript.studio.agent.LlmClient
 import com.tdscript.studio.sandbox.AiHardwareSandbox
 import java.io.File
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -15,6 +17,7 @@ class BenchmarkRunner(
     private val tasks: List<BenchmarkTask> = BenchmarkTask.ALL_TASKS,
     private val profiles: List<LanguageProfile> = LanguageProfile.ALL_PROFILES,
     private val failuresLogFile: File = File("/home/anton/TDscript-Studio/benchmark_failures.log"),
+    private val traceJsonlFile: File = File("/home/anton/TDscript-Studio/benchmark_full_trace.jsonl"),
     private val enableGbnf: Boolean = false
 ) {
 
@@ -28,13 +31,22 @@ class BenchmarkRunner(
             System.err.println("Failed to initialize failures log: ${e.message}")
         }
 
-        for (profile in profiles) {
+        try {
+            traceJsonlFile.parentFile?.mkdirs()
+            traceJsonlFile.writeText("")
+        } catch (e: Exception) {
+            System.err.println("Failed to initialize trace file: ${e.message}")
+        }
+
+        for ((profileIndex, profile) in profiles.withIndex()) {
             println("▶ Starting benchmark for: ${profile.displayName}")
+            System.out.flush()
 
             if (profile.runtimeCommand != null) {
                 val runtime = RuntimeDetector.detect(profile.runtimeCommand)
                 if (!runtime.available) {
                     println("  ⚠️ Runtime '${profile.runtimeCommand}' not found. Marking as SKIPPED_NO_RUNTIME.")
+                    System.out.flush()
                     summaries.add(
                         TargetBenchmarkSummary(
                             profile = profile,
@@ -44,20 +56,31 @@ class BenchmarkRunner(
                             avgRepairIters = 0.0,
                             totalPromptTokens = 0,
                             totalCompletionTokens = 0,
+                            costPerSuccess = 0.0,
                             avgLoc = 0.0,
-                            taskResults = emptyList()
+                            taskResults = emptyList(),
+                            failureBreakdown = emptyMap()
                         )
                     )
                     continue
                 }
             }
 
+            val profileStartTime = System.currentTimeMillis()
             val taskMetrics = mutableListOf<TaskRunMetric>()
+            val profileFailureBreakdown = mutableMapOf<AttemptStatus, Int>()
 
-            for (task in tasks) {
-                val metric = runSingleTask(profile, task)
+            for ((taskIndex, task) in tasks.withIndex()) {
+                val metric = runSingleTask(
+                    profile = profile,
+                    task = task,
+                    profileIndex = profileIndex,
+                    totalProfiles = profiles.size,
+                    taskIndex = taskIndex,
+                    totalTasks = tasks.size,
+                    profileFailureBreakdown = profileFailureBreakdown
+                )
                 taskMetrics.add(metric)
-                println("  Task ${task.id} (${task.title}): ${if (metric.finalSuccess) "✅ PASS (attempts: ${metric.attemptsCount})" else "❌ FAIL"}")
             }
 
             val completedTasks = taskMetrics.filter { it.finalSuccess }
@@ -73,9 +96,22 @@ class BenchmarkRunner(
 
             val totalPromptTokens = taskMetrics.sumOf { it.promptTokens }
             val totalCompletionTokens = taskMetrics.sumOf { it.completionTokens }
+            val costPerSuccess = if (finalSuccessCount > 0) {
+                (totalPromptTokens + totalCompletionTokens).toDouble() / finalSuccessCount
+            } else 0.0
+
             val avgLoc = if (completedTasks.isNotEmpty()) {
                 completedTasks.map { it.loc }.average()
             } else 0.0
+
+            val profileDuration = System.currentTimeMillis() - profileStartTime
+            val passRatio = "$finalSuccessCount/$totalTasks"
+            val firstPassRatio = String.format(Locale.US, "%.1f%%", firstPassPct)
+            val elapsedStr = formatDuration(profileDuration)
+            println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            println(" Summary for ${profile.displayName}: Passed: $passRatio, First-Pass: $firstPassRatio, Elapsed: $elapsedStr")
+            println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            System.out.flush()
 
             summaries.add(
                 TargetBenchmarkSummary(
@@ -86,8 +122,10 @@ class BenchmarkRunner(
                     avgRepairIters = avgRepairIters,
                     totalPromptTokens = totalPromptTokens,
                     totalCompletionTokens = totalCompletionTokens,
+                    costPerSuccess = costPerSuccess,
                     avgLoc = avgLoc,
-                    taskResults = taskMetrics
+                    taskResults = taskMetrics,
+                    failureBreakdown = profileFailureBreakdown.toMap()
                 )
             )
         }
@@ -95,7 +133,15 @@ class BenchmarkRunner(
         return summaries
     }
 
-    private fun runSingleTask(profile: LanguageProfile, task: BenchmarkTask): TaskRunMetric {
+    private fun runSingleTask(
+        profile: LanguageProfile,
+        task: BenchmarkTask,
+        profileIndex: Int = 0,
+        totalProfiles: Int = profiles.size,
+        taskIndex: Int = 0,
+        totalTasks: Int = tasks.size,
+        profileFailureBreakdown: MutableMap<AttemptStatus, Int> = mutableMapOf()
+    ): TaskRunMetric {
         val messages = mutableListOf<ChatMessage>()
         messages.add(ChatMessage("system", profile.systemPromptHeader))
 
@@ -117,50 +163,144 @@ class BenchmarkRunner(
         var finalSuccess = false
         var lastError: String? = null
         var lastLoc = 0
+        var previousCode = ""
 
         while (attempts < 3 && !finalSuccess) {
             attempts++
+            val attemptStartTime = System.currentTimeMillis()
 
-            // Estimate prompt tokens for this turn
             val currentPromptText = messages.joinToString("\n") { "${it.role}: ${it.content}" }
             val promptTokensThisTurn = estimateTokens(currentPromptText)
             totalPromptTokens += promptTokensThisTurn
 
-            val response = try {
+            val timeStr = java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+            println("[$timeStr] [${profileIndex + 1}/$totalProfiles ${profile.displayName} | Task ${task.id}/$totalTasks | Attempt $attempts/3] -> Sending prompt to LLM...")
+            System.out.flush()
+
+            var chatResponse: ChatResponse? = null
+            var invocationError: String? = null
+            try {
                 val grammar = if (profile.useGbnf && enableGbnf) loadGbnfGrammar() else null
-                llmClient.chat(messages, grammar).content
+                chatResponse = callLlmWithHeartbeat(messages, grammar)
             } catch (e: Exception) {
-                lastError = "LLM invocation error: ${e.message}"
+                invocationError = "LLM invocation error: ${e.message}"
+            }
+
+            val attemptDurationMs = System.currentTimeMillis() - attemptStartTime
+            val durationSec = String.format(Locale.US, "%.1f", attemptDurationMs / 1000.0)
+            val resultTimeStr = java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
+            if (chatResponse == null) {
+                lastError = invocationError ?: "Empty LLM response"
+                val status = AttemptStatus.EMPTY_HTTP_RESPONSE
+                profileFailureBreakdown[status] = (profileFailureBreakdown[status] ?: 0) + 1
+                println("[$resultTimeStr] [${profileIndex + 1}/$totalProfiles ${profile.displayName} | Task ${task.id}/$totalTasks | Attempt $attempts/3] <- STATUS: $status (${durationSec}s | $lastError)")
+                System.out.flush()
+
                 logFailure(profile, task, attempts, "", lastError ?: "")
+                recordTrace(
+                    AttemptTraceRecord(
+                        timestamp = java.time.Instant.now().toString(),
+                        target = profile.id,
+                        task_id = task.id,
+                        task_name = task.title,
+                        attempt = attempts,
+                        status = status,
+                        prompt_tokens = promptTokensThisTurn,
+                        completion_tokens = 0,
+                        duration_ms = attemptDurationMs,
+                        raw_response = "",
+                        reasoning_text = null,
+                        extracted_code = "",
+                        loc = 0,
+                        stdout = "",
+                        diagnostic_sent = lastError
+                    )
+                )
                 break
             }
 
-            val completionTokensThisTurn = estimateTokens(response)
+            val rawResponse = chatResponse.content
+            val reasoningText = chatResponse.reasoningText
+            val completionTokensThisTurn = estimateTokens(rawResponse) + (reasoningText?.let { estimateTokens(it) } ?: 0)
             totalCompletionTokens += completionTokensThisTurn
 
-            messages.add(ChatMessage("assistant", response))
+            messages.add(ChatMessage("assistant", rawResponse))
 
-            val code = extractCodeBlock(response, profile.fileExtension)
-            lastLoc = code.lines().filter { it.trim().isNotEmpty() }.size
+            val code = extractCodeBlock(rawResponse, profile.fileExtension)
+            val attemptLoc = calculateLoc(code)
 
-            val execResult = executeCode(profile, task, code)
+            val execResult = if (code.isNotBlank()) {
+                executeCode(profile, task, code)
+            } else {
+                ExecutionResult(false, "Extraction resulted in empty code block")
+            }
 
-            if (execResult.success) {
+            val status: AttemptStatus = when {
+                execResult.success -> AttemptStatus.PASS
+                code.isBlank() && (reasoningText?.isNotBlank() == true || rawResponse.contains("<think>")) -> AttemptStatus.TRUNCATED_IN_THINKING
+                code.isBlank() -> AttemptStatus.EXTRACTION_EMPTY
+                isCompileOrSyntaxError(execResult.error ?: "") -> AttemptStatus.COMPILE_OR_SYNTAX_ERROR
+                execResult.error?.contains("Expected output containing") == true -> AttemptStatus.OUTPUT_MISMATCH
+                else -> AttemptStatus.RUNTIME_OR_SCOPE_ERROR
+            }
+
+            if (status != AttemptStatus.PASS) {
+                profileFailureBreakdown[status] = (profileFailureBreakdown[status] ?: 0) + 1
+            }
+
+            val formattedError = if (status != AttemptStatus.PASS) {
+                formatErrorForRepair(profile, execResult.error ?: "Unknown execution error")
+            } else ""
+
+            if (status == AttemptStatus.PASS) {
+                println("[$resultTimeStr] [${profileIndex + 1}/$totalProfiles ${profile.displayName} | Task ${task.id}/$totalTasks | Attempt $attempts/3] <- STATUS: PASS (${durationSec}s | in=$promptTokensThisTurn out=$completionTokensThisTurn tok | LOC=$attemptLoc)")
+            } else {
+                val shortDiag = formattedError.lines().firstOrNull()?.take(60) ?: ""
+                println("[$resultTimeStr] [${profileIndex + 1}/$totalProfiles ${profile.displayName} | Task ${task.id}/$totalTasks | Attempt $attempts/3] <- STATUS: ${status.name} (${durationSec}s | $shortDiag)")
+            }
+            System.out.flush()
+
+            recordTrace(
+                AttemptTraceRecord(
+                    timestamp = java.time.Instant.now().toString(),
+                    target = profile.id,
+                    task_id = task.id,
+                    task_name = task.title,
+                    attempt = attempts,
+                    status = status,
+                    prompt_tokens = promptTokensThisTurn,
+                    completion_tokens = completionTokensThisTurn,
+                    duration_ms = attemptDurationMs,
+                    raw_response = rawResponse,
+                    reasoning_text = reasoningText,
+                    extracted_code = code,
+                    loc = attemptLoc,
+                    stdout = execResult.output,
+                    diagnostic_sent = if (status == AttemptStatus.PASS) null else formattedError
+                )
+            )
+
+            if (status == AttemptStatus.PASS) {
                 finalSuccess = true
                 if (attempts == 1) {
                     firstPassSuccess = true
                 }
+                lastLoc = attemptLoc
                 lastError = null
             } else {
                 lastError = execResult.error
-                val formattedError = formatErrorForRepair(profile, execResult.error ?: "Unknown execution error")
+                if (code.isNotBlank()) {
+                    previousCode = code
+                }
                 logFailure(profile, task, attempts, code, formattedError)
-                messages.add(
-                    ChatMessage(
-                        "user",
-                        "Your code failed verification with the following error:\n$formattedError\nFix the issue and provide the complete, concise corrected script."
-                    )
-                )
+
+                val repairUserPrompt = if (previousCode.isNotBlank()) {
+                    "Your previous code failed verification with the following error:\n$formattedError\nPrevious code:\n```${profile.fileExtension}\n$previousCode\n```\nFix the issue and provide the complete, concise corrected script inside ```${profile.fileExtension}``` blocks."
+                } else {
+                    "Your previous response did not produce executable code. Error:\n$formattedError\nGenerate the complete script from scratch inside ```${profile.fileExtension}``` blocks without preliminary explanations."
+                }
+                messages.add(ChatMessage("user", repairUserPrompt))
             }
         }
 
@@ -175,6 +315,53 @@ class BenchmarkRunner(
             loc = lastLoc,
             lastError = lastError
         )
+    }
+
+    private fun callLlmWithHeartbeat(messages: List<ChatMessage>, grammar: String?): ChatResponse {
+        val future = CompletableFuture.supplyAsync {
+            llmClient.chat(messages, grammar)
+        }
+        var waitSec = 0
+        while (!future.isDone) {
+            try {
+                future.get(10, TimeUnit.SECONDS)
+                break
+            } catch (e: java.util.concurrent.TimeoutException) {
+                waitSec += 10
+                println("  ... waiting LLM (${waitSec}s)")
+                System.out.flush()
+            }
+        }
+        return future.get()
+    }
+
+    @Synchronized
+    private fun recordTrace(record: AttemptTraceRecord) {
+        try {
+            traceJsonlFile.parentFile?.mkdirs()
+            traceJsonlFile.appendText(record.toJson() + "\n")
+        } catch (e: Exception) {
+            System.err.println("Failed to record trace: ${e.message}")
+        }
+    }
+
+    private fun formatDuration(ms: Long): String {
+        val totalSec = ms / 1000
+        val min = totalSec / 60
+        val sec = totalSec % 60
+        return if (min > 0) "${min}m ${sec}s" else "${sec}s"
+    }
+
+    private fun isCompileOrSyntaxError(err: String): Boolean {
+        return err.contains("Compilation error", ignoreCase = true) ||
+                err.contains("SyntaxError", ignoreCase = true) ||
+                err.contains("LexerException", ignoreCase = true) ||
+                err.contains("ParserException", ignoreCase = true) ||
+                err.contains("LexerError", ignoreCase = true) ||
+                err.contains("ParserError", ignoreCase = true) ||
+                err.contains("undefined reference to", ignoreCase = true) ||
+                err.contains("syntax error", ignoreCase = true) ||
+                err.contains("Unexpected token", ignoreCase = true)
     }
 
     private fun executeCode(profile: LanguageProfile, task: BenchmarkTask, code: String): ExecutionResult {
@@ -422,15 +609,34 @@ class BenchmarkRunner(
         }
     }
 
-    private fun extractCodeBlock(text: String, ext: String): String {
+    fun extractCodeBlock(text: String, ext: String): String {
         val cleanedText = text.replace(Regex("""<think>[\s\S]*?</think>"""), "").trim()
-        val fencePattern = Regex("""```(?:\w+)?\s*([\s\S]*?)```""")
-        val match = fencePattern.find(cleanedText)
-        return if (match != null) {
-            match.groupValues[1].trim()
-        } else {
-            cleanedText
+        val closedPattern = Regex("""```(?:[a-zA-Z0-9_\-]+)?\s*\n([\s\S]*?)```""")
+        val match = closedPattern.find(cleanedText)
+        if (match != null) {
+            return match.groupValues[1].trim()
         }
+
+        val openPattern = Regex("""^[\s\S]*?```(?:[a-zA-Z0-9_\-]+)?\s*\n([\s\S]*)""")
+        val openMatch = openPattern.find(cleanedText)
+        if (openMatch != null) {
+            return openMatch.groupValues[1].trim()
+        }
+
+        return cleanedText
+    }
+
+    fun calculateLoc(code: String): Int {
+        return code.lines()
+            .map { it.trim() }
+            .filter { line ->
+                line.isNotEmpty() &&
+                !line.startsWith("//") &&
+                !line.startsWith("#") &&
+                !line.startsWith("--") &&
+                !line.startsWith("/*") &&
+                !line.startsWith("*")
+            }.size
     }
 
     private fun logFailure(profile: LanguageProfile, task: BenchmarkTask, attempt: Int, code: String, error: String) {
@@ -463,18 +669,39 @@ class BenchmarkRunner(
         sb.append("Objective benchmark comparing **${summaries.size} target languages/runtimes** across 10 identical hardware and network orchestration tasks.\n\n")
 
         sb.append("## Summary Comparison Table\n\n")
-        sb.append("| Target | Status | First-Pass % | Final Success % | Avg Repair Iters | Total Prompt Tokens | Total Completion Tokens | Avg LOC |\n")
-        sb.append("|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|\n")
+        sb.append("| Target | Status | First-Pass % | Final Success % | Avg Repair Iters | Cost / Success | Total Prompt Tokens | Total Completion Tokens | Avg LOC |\n")
+        sb.append("|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|\n")
 
         for (s in summaries) {
-            val firstPassStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.1f%%", s.firstPassPct) else "—"
-            val finalSuccessStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.1f%%", s.finalSuccessPct) else "—"
-            val avgRepairStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.2f", s.avgRepairIters) else "—"
+            val firstPassStr = if (s.status == "COMPLETED") String.format(Locale.US, "%.1f%%", s.firstPassPct) else "—"
+            val finalSuccessStr = if (s.status == "COMPLETED") String.format(Locale.US, "%.1f%%", s.finalSuccessPct) else "—"
+            val avgRepairStr = if (s.status == "COMPLETED") String.format(Locale.US, "%.2f", s.avgRepairIters) else "—"
+            val costStr = if (s.status == "COMPLETED" && s.costPerSuccess > 0) String.format(Locale.US, "%.1f", s.costPerSuccess) else if (s.status == "COMPLETED") "0.0" else "—"
             val promptTokensStr = if (s.status == "COMPLETED") "${s.totalPromptTokens}" else "—"
             val completionTokensStr = if (s.status == "COMPLETED") "${s.totalCompletionTokens}" else "—"
-            val avgLocStr = if (s.status == "COMPLETED") String.format(java.util.Locale.US, "%.1f", s.avgLoc) else "—"
+            val avgLocStr = if (s.status == "COMPLETED") String.format(Locale.US, "%.1f", s.avgLoc) else "—"
 
-            sb.append("| **${s.profile.displayName}** | `${s.status}` | $firstPassStr | $finalSuccessStr | $avgRepairStr | $promptTokensStr | $completionTokensStr | $avgLocStr |\n")
+            sb.append("| **${s.profile.displayName}** | `${s.status}` | $firstPassStr | $finalSuccessStr | $avgRepairStr | $costStr | $promptTokensStr | $completionTokensStr | $avgLocStr |\n")
+        }
+
+        sb.append("\n---\n\n")
+        sb.append("## Failure Breakdown\n\n")
+        sb.append("| Target | TRUNCATED_IN_THINKING | COMPILE_OR_SYNTAX_ERROR | RUNTIME_OR_SCOPE_ERROR | OUTPUT_MISMATCH | Total Failures |\n")
+        sb.append("|:---|:---:|:---:|:---:|:---:|:---:|\n")
+
+        for (s in summaries) {
+            if (s.status != "COMPLETED") {
+                sb.append("| **${s.profile.displayName}** | — | — | — | — | — |\n")
+                continue
+            }
+            val fb = s.failureBreakdown
+            val trunc = fb[AttemptStatus.TRUNCATED_IN_THINKING] ?: 0
+            val comp = fb[AttemptStatus.COMPILE_OR_SYNTAX_ERROR] ?: 0
+            val runScope = fb[AttemptStatus.RUNTIME_OR_SCOPE_ERROR] ?: 0
+            val mismatch = fb[AttemptStatus.OUTPUT_MISMATCH] ?: 0
+            val totalFail = trunc + comp + runScope + mismatch + (fb[AttemptStatus.EXTRACTION_EMPTY] ?: 0) + (fb[AttemptStatus.EMPTY_HTTP_RESPONSE] ?: 0)
+
+            sb.append("| **${s.profile.displayName}** | $trunc | $comp | $runScope | $mismatch | $totalFail |\n")
         }
 
         sb.append("\n---\n\n")

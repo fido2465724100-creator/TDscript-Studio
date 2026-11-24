@@ -20,10 +20,13 @@ fun main(args: Array<String>) {
         ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT.md"
 
     val maxTokens = args.find { it.startsWith("--max-tokens=") }?.substringAfter("--max-tokens=")?.toIntOrNull()
-        ?: 800
+        ?: 1000
 
     val failuresLogPath = args.find { it.startsWith("--failures-out=") }?.substringAfter("--failures-out=")
         ?: "/home/anton/TDscript-Studio/benchmark_failures.log"
+
+    val tracePath = args.find { it.startsWith("--trace-out=") }?.substringAfter("--trace-out=")
+        ?: "/home/anton/TDscript-Studio/benchmark_full_trace.jsonl"
 
     val enableGbnf = args.any { it == "--use-gbnf" }
 
@@ -53,6 +56,7 @@ fun main(args: Array<String>) {
     println("Profiles : ${selectedProfiles.size} profiles (${selectedProfiles.map { it.id }})")
     println("Output   : $reportPath")
     println("Failures : $failuresLogPath")
+    println("Trace    : $tracePath")
     println("GBNF     : $enableGbnf")
     println("--------------------------------------------------------------------------------")
 
@@ -68,6 +72,7 @@ fun main(args: Array<String>) {
         tasks = selectedTasks,
         profiles = selectedProfiles,
         failuresLogFile = File(failuresLogPath),
+        traceJsonlFile = File(tracePath),
         enableGbnf = enableGbnf
     )
     val summaries = runner.runBenchmark()

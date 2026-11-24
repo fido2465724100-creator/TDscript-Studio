@@ -205,12 +205,14 @@ class BenchmarkRunnerTest {
         val mockLlm = MockBenchmarkLlm()
         val dryRunReport = File("build/dry_run_report.md")
         val dryRunFailures = File("build/dry_run_failures.log")
+        val dryRunTrace = File("build/dry_run_trace.jsonl")
         dryRunReport.parentFile?.mkdirs()
 
         val runner = BenchmarkRunner(
             llmClient = mockLlm,
             mocksDir = File("/home/anton/TDscript-Studio/benchmark/mocks"),
-            failuresLogFile = dryRunFailures
+            failuresLogFile = dryRunFailures,
+            traceJsonlFile = dryRunTrace
         )
 
         val summaries = runner.runBenchmark()
@@ -232,6 +234,8 @@ class BenchmarkRunnerTest {
         // Generate markdown report and verify contents
         val report = runner.generateReportMarkdown(summaries)
         assertTrue(report.contains("# Global LLM Automation Benchmark Report"))
+        assertTrue(report.contains("Cost / Success"))
+        assertTrue(report.contains("## Failure Breakdown"))
         assertTrue(report.contains("TDscript Base (v1.4.0)"))
         assertTrue(report.contains("TDscript Experimental (AI-First)"))
         assertTrue(report.contains("Python"))
@@ -243,6 +247,107 @@ class BenchmarkRunnerTest {
         // Save report strictly to build/dry_run_report.md (never overwriting root BENCHMARK_REPORT.md)
         dryRunReport.writeText(report)
         assertTrue(dryRunReport.exists())
+        assertTrue(dryRunTrace.exists())
+    }
+
+    @Test
+    fun testTruncatedMarkdownExtraction() {
+        val runner = BenchmarkRunner(llmClient = MockBenchmarkLlm())
+        val truncatedCpp = "```cpp\nint main() {\n    return 0;\n"
+        val extracted = runner.extractCodeBlock(truncatedCpp, "cpp")
+        assertFalse(extracted.startsWith("```"))
+        assertTrue(extracted.contains("int main()"))
+        assertTrue(extracted.contains("return 0;"))
+    }
+
+    @Test
+    fun testCppRepairDoesNotReuseLinkerErrorAsCode() {
+        val runner = BenchmarkRunner(llmClient = MockBenchmarkLlm())
+        val linkerError = """
+            /usr/bin/x86_64-linux-gnu-ld.bfd: (.text+0x1b): undefined reference to `main'
+            collect2: error: ld returned 1 exit status
+        """.trimIndent()
+        // If LLM returned the linker error as text, extractCodeBlock should not make it valid C++ code
+        val extracted = runner.extractCodeBlock(linkerError, "cpp")
+        assertFalse(extracted.contains("int main()"))
+        // And when given code inside fences, extractCodeBlock extracts only the code, ignoring errors
+        val validCodeWithPreamble = """
+            $linkerError
+            ```cpp
+            #include "mock_hw.hpp"
+            int main() { return 0; }
+            ```
+        """.trimIndent()
+        val extractedValid = runner.extractCodeBlock(validCodeWithPreamble, "cpp")
+        assertTrue(extractedValid.startsWith("#include"))
+        assertFalse(extractedValid.contains("undefined reference"))
+    }
+
+    @Test
+    fun testPythonLocCalculation() {
+        val runner = BenchmarkRunner(llmClient = MockBenchmarkLlm())
+        val pyCode = """
+            # Initial comment
+            from mock_hw import I2C, PLC
+
+            # Setup I2C
+            i2c = I2C()
+            val = i2c.read(0x76, 0xD0, 1)
+
+            # Print output
+            print(val)
+        """.trimIndent()
+        val loc = runner.calculateLoc(pyCode)
+        // Expected code lines:
+        // 1. from mock_hw import I2C, PLC
+        // 2. i2c = I2C()
+        // 3. val = i2c.read(0x76, 0xD0, 1)
+        // 4. print(val)
+        assertEquals(4, loc)
+    }
+
+    @Test
+    fun testUnifiedTraceJsonlWrittenForPassAndFail() {
+        val traceFile = File("build/dry_run_trace_test.jsonl")
+        traceFile.delete()
+
+        val mockLlm = MockBenchmarkLlm()
+        val runner = BenchmarkRunner(
+            llmClient = mockLlm,
+            traceJsonlFile = traceFile,
+            failuresLogFile = File("build/dry_run_failures_test.log"),
+            tasks = BenchmarkTask.ALL_TASKS.filter { it.id == 10 }, // Task 10 triggers failure on attempt 1 and pass on attempt 2
+            profiles = listOf(LanguageProfile.ALL_PROFILES.first { it.id == "python" })
+        )
+
+        runner.runBenchmark()
+
+        assertTrue(traceFile.exists())
+        val lines = traceFile.readLines().filter { it.isNotBlank() }
+        assertTrue("Trace file must contain at least 2 attempts for Task 10", lines.size >= 2)
+
+        // Attempt 1 should be a failure (RUNTIME_OR_SCOPE_ERROR)
+        val attempt1 = lines[0]
+        assertTrue(attempt1.contains("\"attempt\":1"))
+        assertTrue(attempt1.contains("\"status\":\"RUNTIME_OR_SCOPE_ERROR\""))
+        assertTrue(attempt1.contains("\"diagnostic_sent\":"))
+
+        // Attempt 2 should be a PASS
+        val attempt2 = lines[1]
+        assertTrue(attempt2.contains("\"attempt\":2"))
+        assertTrue(attempt2.contains("\"status\":\"PASS\""))
+        assertTrue(attempt2.contains("\"diagnostic_sent\":null"))
+
+        // Verify required keys exist in JSON
+        val requiredKeys = listOf(
+            "\"timestamp\"", "\"target\"", "\"task_id\"", "\"task_name\"", "\"attempt\"",
+            "\"status\"", "\"prompt_tokens\"", "\"completion_tokens\"", "\"duration_ms\"",
+            "\"raw_response\"", "\"extracted_code\"", "\"loc\"", "\"stdout\""
+        )
+        for (key in requiredKeys) {
+            assertTrue("JSON line must contain $key", attempt1.contains(key))
+            assertTrue("JSON line must contain $key", attempt2.contains(key))
+        }
     }
 
     @Test
@@ -260,7 +365,9 @@ class BenchmarkRunnerTest {
         )
         val runner = BenchmarkRunner(
             llmClient = mockLlm,
-            profiles = listOf(fakeProfile)
+            profiles = listOf(fakeProfile),
+            failuresLogFile = File("build/dry_run_fake_failures.log"),
+            traceJsonlFile = File("build/dry_run_fake_trace.jsonl")
         )
         val summaries = runner.runBenchmark()
         assertEquals(1, summaries.size)
