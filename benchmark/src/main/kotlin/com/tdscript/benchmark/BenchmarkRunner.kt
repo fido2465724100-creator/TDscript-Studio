@@ -19,7 +19,7 @@ class BenchmarkRunner(
     private val failuresLogFile: File = File("/home/anton/TDscript-Studio/benchmark_failures.log"),
     private val traceJsonlFile: File = File("/home/anton/TDscript-Studio/benchmark_full_trace.jsonl"),
     private val enableGbnf: Boolean = false,
-    private val progressLabel: String = "TEST #4"
+    private val progressLabel: String = "TEST #5"
 ) {
 
     fun runBenchmark(): List<TargetBenchmarkSummary> {
