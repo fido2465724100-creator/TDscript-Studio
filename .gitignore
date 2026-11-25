@@ -4,5 +4,14 @@ build/
 .idea/
 *.iml
 .DS_Store
-*.log
 local.properties
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs (ignore general logs, but keep benchmark audit logs)
+*.log
+!benchmark_failures*.log
+!*.jsonl
+

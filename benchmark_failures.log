@@ -1,0 +1,1238 @@
+=== TDscript Benchmark Failures Log ===
+Started: 2026-11-24T05:04:55.311503652Z
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 1 (BME280 Chip ID Read) | Attempt: 1/3
+Timestamp: 2026-11-24T05:06:30.779328974Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 1 (BME280 Chip ID Read) | Attempt: 2/3
+Timestamp: 2026-11-24T05:08:06.693103432Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 2 (Modbus Boiler Temperature Control) | Attempt: 1/3
+Timestamp: 2026-11-24T05:10:08.409715489Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 3 (Safe I2C Poll with Watchdog Emergency) | Attempt: 1/3
+Timestamp: 2026-11-24T05:12:46.558511028Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 4 (Modbus 5-Iteration Loop with Watchdog Feed) | Attempt: 1/3
+Timestamp: 2026-11-24T05:15:00.206423476Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 4 (Modbus 5-Iteration Loop with Watchdog Feed) | Attempt: 2/3
+Timestamp: 2026-11-24T05:16:36.073301189Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 7 (Network Ping Check and Modbus Read) | Attempt: 1/3
+Timestamp: 2026-11-24T05:19:54.541927362Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 7 (Network Ping Check and Modbus Read) | Attempt: 2/3
+Timestamp: 2026-11-24T05:21:30.968158470Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 8 (I2C Configuration Register Write) | Attempt: 1/3
+Timestamp: 2026-11-24T05:23:33.916739396Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 8 (I2C Configuration Register Write) | Attempt: 2/3
+Timestamp: 2026-11-24T05:25:09.892735527Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 9 (Combined Dual-Sensor Verification) | Attempt: 1/3
+Timestamp: 2026-11-24T05:27:15.630746580Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 1/3
+Timestamp: 2026-11-24T05:29:27.607290348Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "Extraction resulted in empty code block",
+  "expected": "valid syntax",
+  "actual": "Extraction resulted in empty c",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Base (v1.4.0) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 2/3
+Timestamp: 2026-11-24T05:30:16.192118413Z
+--- RAW GENERATED CODE ---
+let chip = 0x76;
+let host = "127.0.0.1";
+let reg = 100;
+let data = ByteArray(10);
+let temp = 0;
+let status = true;
+
+while (status) {
+    if (chip == 0x68) {
+        chip = 0x76;
+        print(L"Self-repair: Chip address corrected to 0x76");
+    }
+    
+    if (reg < 100 || reg > 200) {
+        reg = 100;
+        print(L"Self-repair: Modbus register corrected to 100");
+    }
+    
+    try {
+        I2C.read(chip, 208, 1);
+        I2C.write(chip, 208, ByteArray(1));
+        PLC.modbusRead(host, reg);
+        PLC.modbusWrite(host, reg, 0);
+        WATCHDOG.feed();
+        NET.ping(host);
+        temp = temp + 1;
+        print(L"Cycle completed: temp={temp}");
+    } catch (e) {
+        chip = 0x76;
+        reg = 100;
+        print(L"Error caught: Address corrected to safe values");
+    }
+    
+    if (temp >= 5) {
+        status = false;
+    }
+}
+
+WATCHDOG.emergencyStop();
+print(L"Task completed successfully");
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+{
+  "status": "ERROR",
+  "error_code": "TDS_E101_SYNTAX_ERROR",
+  "line": 1,
+  "column": 1,
+  "message": "ParseException: ParseError: Expected statement terminator (';', newline or EOF) at line 19, col 9 (token: LBRACE)",
+  "expected": "valid syntax",
+  "actual": "ParseException: ParseError: Ex",
+  "suggestion": ""
+}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 2 (Modbus Boiler Temperature Control) | Attempt: 1/3
+Timestamp: 2026-11-24T05:33:44.775979451Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E101@1:1 exp=valid_syntax got=Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 3 (Safe I2C Poll with Watchdog Emergency) | Attempt: 1/3
+Timestamp: 2026-11-24T05:36:28.893950178Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+LLM invocation error: java.net.SocketTimeoutException: Read timed out
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 4 (Modbus 5-Iteration Loop with Watchdog Feed) | Attempt: 1/3
+Timestamp: 2026-11-24T05:38:17.639328366Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E101@1:1 exp=valid_syntax got=Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 6 (BLE Sensor Connect & Query) | Attempt: 1/3
+Timestamp: 2026-11-24T05:40:51.756778262Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E101@1:1 exp=valid_syntax got=Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 7 (Network Ping Check and Modbus Read) | Attempt: 1/3
+Timestamp: 2026-11-24T05:42:44.002606488Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E101@1:1 exp=valid_syntax got=Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 9 (Combined Dual-Sensor Verification) | Attempt: 1/3
+Timestamp: 2026-11-24T05:45:02.244223065Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E101@1:1 exp=valid_syntax got=Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 1/3
+Timestamp: 2026-11-24T05:47:11.284299886Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E101@1:1 exp=valid_syntax got=Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: TDscript Experimental (AI-First) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 2/3
+Timestamp: 2026-11-24T05:48:03.756034454Z
+--- RAW GENERATED CODE ---
+let safeI2CAddr = 0x76;
+let safeModbusStart = 100;
+let safeModbusEnd = 200;
+
+var i2cAttempts = 0;
+var modbusAttempts = 0;
+
+if (I2C.read(0x68, 0x00, 1)) {
+    print("ERROR: Forbidden I2C address 0x68 detected");
+    WATCHDOG.feed();
+    safeI2CAddr = 0x76;
+    i2cAttempts = i2cAttempts + 1;
+} else {
+    let data = I2C.read(safeI2CAddr, 0xD0, 1);
+    print("I2C read from 0x" + safeI2CAddr.toString(16) + ": " + data);
+}
+
+var reg = 101;
+while (reg <= safeModbusEnd) {
+    if (reg < safeModbusStart || reg > safeModbusEnd) {
+        WATCHDOG.feed();
+        reg = safeModbusStart;
+    } else {
+        let val = PLC.modbusRead("127.0.0.1", reg);
+        print("Modbus reg " + reg + ": " + val);
+        if (val == 0) {
+            PLC.modbusWrite("127.0.0.1", reg, 1);
+        }
+        reg = reg + 1;
+        modbusAttempts = modbusAttempts + 1;
+    }
+}
+
+WATCHDOG.feed();
+BT.connect("sensor_01");
+BT.send("READ");
+let sensorData = BT.readLine();
+print("Sensor data: " + sensorData);
+
+NET.ping("192.168.1.50");
+WATCHDOG.feed();
+print("CapabilityScope adherence verified");
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+E104@14:5 exp=0x76|0x77 got=0x68
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 1 (BME280 Chip ID Read) | Attempt: 1/3
+Timestamp: 2026-11-24T05:50:31.152731179Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 2 (Modbus Boiler Temperature Control) | Attempt: 1/3
+Timestamp: 2026-11-24T05:52:30.838116725Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 3 (Safe I2C Poll with Watchdog Emergency) | Attempt: 1/3
+Timestamp: 2026-11-24T05:55:02.392227258Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 4 (Modbus 5-Iteration Loop with Watchdog Feed) | Attempt: 1/3
+Timestamp: 2026-11-24T05:57:08.319341308Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 5 (Localized Notification Resource) | Attempt: 1/3
+Timestamp: 2026-11-24T05:59:06.293949254Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 5 (Localized Notification Resource) | Attempt: 2/3
+Timestamp: 2026-11-24T06:00:41.896912583Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 6 (BLE Sensor Connect & Query) | Attempt: 1/3
+Timestamp: 2026-11-24T06:03:09.633175771Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 7 (Network Ping Check and Modbus Read) | Attempt: 1/3
+Timestamp: 2026-11-24T06:05:05.528221834Z
+--- RAW GENERATED CODE ---
+from mock_hw import I2C, PLC, WATCHDOG, NET, BT
+
+host = '192.168.1.50'
+reg = 100
+
+ping_time = NET.ping(host)
+
+if ping_time > 0:
+    value = PLC.modbus_read(host
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+  File "/tmp/bench_py_9956353875929852285.py", line 9
+    value = PLC.modbus_read(host
+                           ^
+SyntaxError: '(' was never closed
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 8 (I2C Configuration Register Write) | Attempt: 1/3
+Timestamp: 2026-11-24T06:07:08.418487213Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 9 (Combined Dual-Sensor Verification) | Attempt: 1/3
+Timestamp: 2026-11-24T06:09:17.415791337Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 1/3
+Timestamp: 2026-11-24T06:12:02.418519875Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 2/3
+Timestamp: 2026-11-24T06:13:38.275228553Z
+--- RAW GENERATED CODE ---
+from mock_hw import I2C, PLC, WATCHDOG, NET, BT
+
+def safe_i2c_read(addr: int, reg: int, length: int) -> list[int]:
+    """Read from I2C with capability scope enforcement"""
+    if addr != 0x76:
+        print(f"WARNING: Attempted I2C read at forbidden address 0x{addr:02X}, self-repairing to 0x76")
+        addr = 0x76
+    return I2C.read(addr, reg, length)
+
+def safe_i2c_write(addr: int, reg: int, data) -> bool:
+    """Write to I2C with capability scope enforcement"""
+    if addr != 0x76:
+        print(f"WARNING: Attempted I2C write at forbidden address 0x{addr:02X}, self-repairing to 0x76")
+        addr = 0x76
+    return I2C.write(addr, reg, data)
+
+def safe_modbus_read(host: str, reg: int) -> int:
+    """Read from Modbus with capability scope enforcement"""
+    if not (100 <= reg <= 200):
+        print(f"WARNING: Attempted Modbus read at forbidden register {reg}, self-repairing to 100")
+        reg = 100
+    return PLC.modbus_read(host, reg)
+
+def safe_modbus_write(host: str, reg: int, val: int) -> bool:
+    """Write to Modbus with capability scope enforcement"""
+    if not (100 <= reg <= 200):
+        print(f"WARNING: Attempted Modbus write at forbidden register {reg}, self-repairing to 100")
+        reg = 100
+    return PLC.modbus_write(host, reg, val)
+
+def main():
+    # Initialize watchdog
+    watchdog = WATCHDOG()
+    watchdog.feed()
+    
+    # Initialize I2C
+    i2c = I2C()
+    
+    # Initialize NET
+    net = NET()
+    
+    # Initialize BT
+    bt = BT()
+    
+    # Initialize PLC
+    plc = PLC()
+    
+    # Test I2C read with forbidden address (should self-repair)
+    try:
+        data = safe_i2c_read(0x68, 0, 8)
+        print(f"I2C read result: {data}")
+    except Exception as e:
+        print(f"I2C read error: {e}")
+    
+    # Test I2C write with forbidden address (should self-repair)
+    try:
+        result = safe_i2c_write(0x68, 0, [0x01, 0x02, 0x03])
+        print(f"I2C write result: {result}")
+    except Exception as e:
+        print(f"I2C write error: {e}")
+    
+    # Test I2C read with allowed address
+    data = safe_i2c_read(0x76, 0, 8)
+    print(f"I2C read at allowed address 0x76: {data}")
+    
+    # Test I2C write with allowed address
+    result = safe_i2c_write(0x76, 0, [0x01, 0x02, 0x03])
+    print(f"I2C write at allowed address 0x76: {result}")
+    
+    # Test Modbus read with forbidden register (should self-repair)
+    try:
+        value = safe_modbus_read("192.168.1.100", 50)
+        print(f"Modbus read result: {value}")
+    except Exception as e:
+        print(f
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+  File "/tmp/bench_py_3769075818003602352.py", line 75
+    print(f
+         ^
+SyntaxError: '(' was never closed
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Python | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 3/3
+Timestamp: 2026-11-24T06:15:20.840197546Z
+--- RAW GENERATED CODE ---
+from mock_hw import I2C, PLC, WATCHDOG, NET, BT
+
+def safe_i2c_read(addr: int, reg: int, length: int) -> list[int]:
+    if addr != 0x76:
+        print(f"WARNING: I2C read at forbidden 0x{addr:02X}, self-repairing to 0x76")
+        addr = 0x76
+    return I2C.read(addr, reg, length)
+
+def safe_i2c_write(addr: int, reg: int, data) -> bool:
+    if addr != 0x76:
+        print(f"WARNING: I2C write at forbidden 0x{addr:02X}, self-repairing to 0x76")
+        addr = 0x76
+    return I2C.write(addr, reg, data)
+
+def safe_modbus_read(host: str, reg: int) -> int:
+    if not (100 <= reg <= 200):
+        print(f"WARNING: Modbus read at forbidden reg {reg}, self-repairing to 100")
+        reg = 100
+    return PLC.modbus_read(host, reg)
+
+def safe_modbus_write(host: str, reg: int, val: int) -> bool:
+    if not (100 <= reg <= 200):
+        print(f"WARNING: Modbus write at forbidden reg {reg}, self-repairing to 100")
+        reg = 100
+    return PLC.modbus_write(host, reg, val)
+
+def main():
+    watchdog = WATCHDOG()
+    watchdog.feed()
+    
+    i2c = I2C()
+    net = NET()
+    bt = BT()
+    plc = PLC()
+    
+    # Test I2C read with forbidden address (self-repair)
+    data = safe_i2c_read(0x68, 0, 8)
+    print(f"I2C read result: {data}")
+    
+    # Test I2C write with forbidden address (self-repair)
+    result = safe_i2c_write(0x68, 0, [0x01, 0x02, 0x03])
+    print(f"I2C write result: {result}")
+    
+    # Test I2C read with allowed address
+    data = safe_i2c_read(0x76, 0, 8)
+    print(f"I2C read at 0x76: {data}")
+    
+    # Test I2C write with allowed address
+    result = safe_i2c_write(0x76, 0, [0x01, 0x02, 0x03])
+    print(f"I2C write at 0x76: {result}")
+    
+    # Test Modbus read with forbidden register (self-repair)
+    value = safe_modbus_read("192.168.1.100", 50)
+    print(f"Modbus read result: {value}")
+    
+    # Test Modbus write with forbidden register (self-repair)
+    result = safe_modbus_write("192.168.1.100", 50, 255)
+    print(f"Modbus write result: {result}")
+    
+    # Test Modbus read with allowed register
+    value = safe_modbus_read("192.168.1.100", 150)
+    print(f"Modbus read at reg 150: {value}")
+    
+    # Test Modbus write with allowed register
+    result = safe_modbus_write("192.168.1.100", 150, 128)
+    print(f"Modbus write at reg 150:
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+  File "/tmp/bench_py_16901163287649558957.py", line 66
+    print(f"Modbus write at reg 150:
+          ^
+SyntaxError: unterminated f-string literal (detected at line 66)
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 3 (Safe I2C Poll with Watchdog Emergency) | Attempt: 1/3
+Timestamp: 2026-11-24T06:19:24.922262985Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 4 (Modbus 5-Iteration Loop with Watchdog Feed) | Attempt: 1/3
+Timestamp: 2026-11-24T06:21:50.755987991Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 5 (Localized Notification Resource) | Attempt: 1/3
+Timestamp: 2026-11-24T06:22:55.784497578Z
+--- RAW GENERATED CODE ---
+#include "mock_hw.hpp"
+
+int main() {
+    // Initialize hardware
+    WATCHDOG::feed();
+    
+    // Create localized notification using LString with parameter
+    LString notification = LString::format("ALERT_TEMP: temp=%.1f", 24.5);
+    
+    // Print the localized notification
+    std::cout << notification << std::endl;
+    
+    return 0;
+}
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+C++ Compilation error:
+/tmp/bench_cpp_10879585746945268886.cpp: In function ‘int main()’:
+/tmp/bench_cpp_10879585746945268886.cpp:8:5: error: ‘LString’ was not declared in this scope
+    8 |     LString notification = LString::format("ALERT_TEMP: temp=%.1f", 24.5);
+      |     ^~~~~~~
+/tmp/bench_cpp_10879585746945268886.cpp:11:18: error: ‘notification’ was not declared in this scope
+   11 |     std::cout << notification << std::endl;
+      |                  ^~~~~~~~~~~~
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 7 (Network Ping Check and Modbus Read) | Attempt: 1/3
+Timestamp: 2026-11-24T06:25:50.681959059Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 8 (I2C Configuration Register Write) | Attempt: 1/3
+Timestamp: 2026-11-24T06:28:06.557960041Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 9 (Combined Dual-Sensor Verification) | Attempt: 1/3
+Timestamp: 2026-11-24T06:30:15.418355034Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 9 (Combined Dual-Sensor Verification) | Attempt: 2/3
+Timestamp: 2026-11-24T06:31:51.335853967Z
+--- RAW GENERATED CODE ---
+#include "mock_hw.hpp"
+
+int main() {
+    // Read BME280 Chip ID from I2C address 0x76
+    std::vector<uint8_t> bme_data =
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+C++ Compilation error:
+/tmp/bench_cpp_11637711892031853523.cpp: In function ‘int main()’:
+/tmp/bench_cpp_11637711892031853523.cpp:5:36: error: expected primary-expression at end of input
+    5 |     std::vector<uint8_t> bme_data =
+      |                                    ^
+/tmp/bench_cpp_11637711892031853523.cpp:5:36: error: expected ‘,’ or ‘;’ at end of input
+/tmp/bench_cpp_11637711892031853523.cpp:5:36: error: expected ‘}’ at end of input
+/tmp/bench_cpp_11637711892031853523.cpp:3:12: note: to match this ‘{’
+    3 | int main() {
+      |            ^
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: C++ (Arduino/ESP32 style) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 1/3
+Timestamp: 2026-11-24T06:34:38.777499274Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Lua | Task: 5 (Localized Notification Resource) | Attempt: 1/3
+Timestamp: 2026-11-24T06:40:30.428822964Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Extraction resulted in empty code block
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Lua | Task: 5 (Localized Notification Resource) | Attempt: 2/3
+Timestamp: 2026-11-24T06:41:17.170757125Z
+--- RAW GENERATED CODE ---
+local hw = require("mock_hw")
+
+-- Create localized notification with ALERT_TEMP key and temp=24.5
+local temp = 24.5
+local notification_key = "ALERT_TEMP"
+
+-- Feed watchdog to prevent emergency stop
+hw.WATCHDOG.feed()
+
+-- Create localized notification string (simulating LString behavior)
+local notification = string.format("ALERT_TEMP: Temperature = %.1f°C", temp)
+
+-- Print the localized notification
+print(notification)
+
+-- Optional: Send notification via BT if available
+if hw.BT.connect("localhost") then
+    hw.BT.send(notification)
+    hw.BT.disconnect()
+end
+
+-- Terminate script
+hw.WATCHDOG.emergency_stop()
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+lua: /tmp/bench_lua_2490680729129612114.lua:19: attempt to call a nil value (field 'disconnect')
+stack traceback:
+	/tmp/bench_lua_2490680729129612114.lua:19: in main chunk
+	[C]: in ?
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Lua | Task: 9 (Combined Dual-Sensor Verification) | Attempt: 1/3
+Timestamp: 2026-11-24T06:45:08.111205445Z
+--- RAW GENERATED CODE ---
+local hw = require("mock_hw")
+
+-- Read BME280 Chip ID (I2C address 0x76, register 0x00, 1 byte)
+local bme_data = hw.I2C.read(0x76, 0x00, 1)
+local bme_id = bme_data.value
+
+-- Read Modbus register 100
+local modbus_val = hw.PLC.modbus_read("192.168.1.1", 100
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+lua: /tmp/bench_lua_5792164071115349565.lua:8: ')' expected near <eof>
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Lua | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 1/3
+Timestamp: 2026-11-24T06:47:31.874089137Z
+--- RAW GENERATED CODE ---
+local hw = require("mock_hw")
+
+-- CapabilityScope constants
+local I2C_ALLOWED_ADDR = 0x76
+local I2C_FORBIDDEN_EXAMPLE = 0x68
+local MODBUS_MIN_REG = 100
+local MODBUS_MAX_REG = 200
+
+-- Self-repair function
+local function repair_to_allowed_scope()
+    print("Self-repair: Redirecting to allowed I2C address 0x76")
+    return I2C_ALLOWED_ADDR
+end
+
+-- Validate I2C address
+local function validate_i2c_address(addr)
+    if addr == I2C_FORBIDDEN_EXAMPLE then
+        print("VIOLATION: I2C address 0x68 is forbidden")
+        return repair_to_allowed_scope()
+    end
+    return addr
+end
+
+-- Validate Modbus register
+local function validate_modbus_register(reg)
+    if reg < MODBUS_MIN_REG or reg > MODBUS_MAX_REG then
+        print("VIOLATION: Modbus register " .. reg .. " is out of scope (100-200)")
+        return MODBUS_MIN_REG
+    end
+    return reg
+end
+
+-- Main execution
+local function main()
+    print("=== Task 10: CapabilityScope Adherence & Self-Repair ===")
+    
+    -- Feed watchdog
+    hw.WATCHDOG.feed()
+    
+    -- Safe I2C read operation
+    local i2c_addr = validate_i2c_address(I2C_ALLOWED_ADDR)
+    local i2c_data = hw.I2C.read(i2c_addr, 0x00, 2)
+    print("I2C Read from 0x" .. string.format("%02X", i2c_addr) .. " succeeded")
+    
+    -- Attempt forbidden I2C address (triggers self-repair)
+    local forbidden_addr = validate_i2c_address(I2C_FORBIDDEN_EXAMPLE)
+    local safe_addr = validate_i2c_address(forbidden_addr)
+    print("After self-repair, using address: 0x" .. string.format("%02X", safe_addr))
+    
+    -- Safe I2C write operation
+    hw.I2C.write(safe_addr, 0x00, 0x42)
+    print("I2C Write to 0x" .. string.format("%02X", safe_addr) .. " succeeded")
+    
+    -- Safe Modbus read operation
+    local modbus_reg = validate_modbus_register(150)
+    local modbus_val = hw.PLC.modbus_read("192.168.1.1", modbus_reg)
+    print("Modbus Read from register " .. modbus_reg .. " = " .. modbus_val)
+    
+    -- Attempt forbidden Modbus register (triggers self-repair)
+    local forbidden_reg = validate_modbus_register(50)
+    local safe_reg = validate_modbus_register(forbidden_reg)
+    print("After self-repair, using register: " .. safe_reg)
+    
+    -- Safe Modbus write operation
+    hw.PLC.modbus_write("192.168.1.1", safe_reg, 12345)
+    print("Modbus Write to register " .. safe_reg .. " succeeded")
+    
+    -- Network check
+    local ping_result = hw.NET.ping("192.168.1.1")
+    print("Network ping result: " .. ping_result)
+    
+    -- Bluetooth check (optional, within scope)
+    local bt_connected = hw.BT.connect("BT_DEVICE")
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+lua: /tmp/bench_lua_8597542714094067148.lua:73: 'end' expected (to close 'function' at line 34) near <eof>
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: JavaScript (Node.js) | Task: 5 (Localized Notification Resource) | Attempt: 1/3
+Timestamp: 2026-11-24T06:53:00.829181588Z
+--- RAW GENERATED CODE ---
+const { I2C, PLC, WATCHDOG, NET, BT } = require('./mock_hw');
+
+// Feed watchdog to prevent emergency stop
+WATCHDOG.feed();
+
+// Create localized notification using LString format (no direct concatenation)
+const temp = 24.5;
+const notification = LString("ALERT_TEMP", temp);
+
+// Write notification to PLC register
+const success = PLC.modbusWrite(1, 100, notification);
+
+// Print the notification
+console.log(notification);
+
+// Feed watchdog again before exit
+WATCHDOG.feed();
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+/home/anton/TDscript-Studio/benchmark/mocks/bench_js_16058416283417072917.js:8
+const notification = LString("ALERT_TEMP", temp);
+                     ^
+
+ReferenceError: LString is not defined
+    at Object.<anonymous> (/home/anton/TDscript-Studio/benchmark/mocks/bench_js_16058416283417072917.js:8:22)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+    at node:internal/main/run_main_module:28:49
+
+Node.js v20.20.2
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: JavaScript (Node.js) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 1/3
+Timestamp: 2026-11-24T06:59:11.034871439Z
+--- RAW GENERATED CODE ---
+const { I2C, PLC, WATCHDOG, NET, BT } = require('./mock_hw');
+
+// CapabilityScope constants
+const ALLOWED_I2C_ADDR = 0x76;
+const ALLOWED_I2C_ADDR_FORBIDDEN = 0x68;
+const ALLOWED_MODBUS_REG_START = 100;
+const ALLOWED_MODBUS_REG_END = 200;
+
+// Self-repair function for I2C address violations
+function repairI2CAddress(addr) {
+    console.log(`[REPAIR] Forbidden I2C address 0x${addr.toString(16)} detected, switching to 0x${ALLOWED_I2C_ADDR.toString(16)}`);
+    return ALLOWED_I2C_ADDR;
+}
+
+// Self-repair function for Modbus register violations
+function repairModbusRegister(reg) {
+    const closest = Math.max(ALLOWED_MODBUS_REG_START, Math.min(ALLOWED_MODBUS_REG_END, reg));
+    console.log(`[REPAIR] Forbidden Modbus register ${reg} detected, switching to ${closest}`);
+    return closest;
+}
+
+// Main execution
+async function main() {
+    try {
+        // Feed watchdog initially
+        WATCHDOG.feed();
+
+        // I2C operations - only on allowed address 0x76
+        console.log('[I2C] Reading from allowed address 0x76...');
+        const i2cData = I2C.read(ALLOWED_I2C_ADDR, 0x00, 4);
+        console.log('[I2C] Read data:', i2cData);
+
+        console.log('[I2C] Writing to allowed address 0x76...');
+        const writeSuccess = I2C.write(ALLOWED_I2C_ADDR, 0x00, [0x01, 0x02, 0x03, 0x04]);
+        console.log('[I2C] Write success:', writeSuccess);
+
+        // Test forbidden I2C address - trigger self-repair
+        console.log('[TEST] Attempting forbidden I2C address 0x68...');
+        try {
+            I2C.read(ALLOWED_I2C_ADDR_FORBIDDEN, 0x00, 4);
+        } catch (e) {
+            console.log('[TEST] Caught forbidden I2C access');
+            const repairedAddr = repairI2CAddress(ALLOWED_I2C_ADDR_FORBIDDEN);
+            console.log('[TEST] Self-repaired to:', repairedAddr);
+        }
+
+        // Modbus operations - only on allowed registers 100-200
+        console.log('[PLC] Reading from allowed Modbus register 150...');
+        const plcRead = PLC.modbusRead('192.168.1.100', 150);
+        console.log('[PLC] Read value:', plcRead);
+
+        console.log('[PLC] Writing to allowed Modbus register 150...');
+        const plcWrite = PLC.modbusWrite('192.168.1.100', 150, 42);
+        console.log('[PLC] Write success:', plcWrite);
+
+        // Test forbidden Modbus register - trigger self-repair
+        console.log('[TEST] Attempting forbidden Modbus register 50...');
+        try {
+            PLC.modbusRead('192.168.1.100', 50);
+        } catch (e) {
+            console.log('[TEST] Caught forbidden Modbus access');
+            const repairedReg = repairModbusRegister(50);
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+/home/anton/TDscript-Studio/benchmark/mocks/bench_js_12145157742364885374.js:62
+            const repairedReg = repairModbusRegister(50);
+                                                         
+
+SyntaxError: Unexpected end of input
+    at wrapSafe (node:internal/modules/cjs/loader:1464:18)
+    at Module._compile (node:internal/modules/cjs/loader:1495:20)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+    at node:internal/main/run_main_module:28:49
+
+Node.js v20.20.2
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: JavaScript (Node.js) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 2/3
+Timestamp: 2026-11-24T07:00:53.565393319Z
+--- RAW GENERATED CODE ---
+const { I2C, PLC, WATCHDOG, NET, BT } = require('./mock_hw');
+
+// CapabilityScope constants
+const ALLOWED_I2C_ADDR = 0x76;
+const ALLOWED_I2C_ADDR_FORBIDDEN = 0x68;
+const ALLOWED_MODBUS_REG_START = 100;
+const ALLOWED_MODBUS_REG_END = 200;
+
+// Self-repair function for I2C address violations
+function repairI2CAddress(addr) {
+    console.log(`[REPAIR] Forbidden I2C address 0x${addr.toString(16)} detected, switching to 0x${ALLOWED_I2C_ADDR.toString(16)}`);
+    return ALLOWED_I2C_ADDR;
+}
+
+// Self-repair function for Modbus register violations
+function repairModbusRegister(reg) {
+    const closest = Math.max(ALLOWED_MODBUS_REG_START, Math.min(ALLOWED_MODBUS_REG_END, reg));
+    console.log(`[REPAIR] Forbidden Modbus register ${reg} detected, switching to ${closest}`);
+    return closest;
+}
+
+// Main execution
+async function main() {
+    try {
+        // Feed watchdog initially
+        WATCHDOG.feed();
+
+        // I2C operations - only on allowed address 0x76
+        console.log('[I2C] Reading from allowed address 0x76...');
+        const i2cData = I2C.read(ALLOWED_I2C_ADDR, 0x00, 4);
+        console.log('[I2C] Read data:', i2cData);
+
+        console.log('[I2C] Writing to allowed address 0x76...');
+        const writeSuccess = I2C.write(ALLOWED_I2C_ADDR, 0x00, [0x01, 0x02, 0x03, 0x04]);
+        console.log('[I2C] Write success:', writeSuccess);
+
+        // Test forbidden I2C address - trigger self-repair
+        console.log('[TEST] Attempting forbidden I2C address 0x68...');
+        try {
+            I2C.read(ALLOWED_I2C_ADDR_FORBIDDEN, 0x00, 4);
+        } catch (e) {
+            console.log('[TEST] Caught forbidden I2C access');
+            const repairedAddr = repairI2CAddress(ALLOWED_I2C_ADDR_FORBIDDEN);
+            console.log('[TEST] Self-repaired to:', repairedAddr);
+        }
+
+        // Modbus operations - only on allowed registers 100-200
+        console.log('[PLC] Reading from allowed Modbus register 150...');
+        const plcRead = PLC.modbusRead('192.168.1.100', 150);
+        console.log('[PLC] Read value:', plcRead);
+
+        console.log('[PLC] Writing to allowed Modbus register 150...');
+        const plcWrite = PLC.modbusWrite('192.168.1.100', 150, 42);
+        console.log('[PLC] Write success:', plcWrite);
+
+        // Test forbidden Modbus register - trigger self-repair
+        console.log('[TEST] Attempting forbidden Modbus register 50...');
+        try {
+            PLC.modbusRead('192.168.1.100', 50);
+        } catch (e) {
+            console.log('[TEST] Caught forbidden Modbus access');
+            const repairedReg = repairModbusRegister(50);
+            console.log('[TEST] Self-repaired to:', repairedReg);
+        }
+
+        // Additional allowed operations
+        console.log('[NET] Pinging allowed host...');
+        const pingResult = NET.ping('192.168.1.1');
+        console.log('[NET] Ping result:', pingResult);
+
+        console.log('[BT
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+/home/anton/TDscript-Studio/benchmark/mocks/bench_js_10487044454073773474.js:71
+        console.log('[BT
+                    ^^^^
+
+SyntaxError: Invalid or unexpected token
+    at wrapSafe (node:internal/modules/cjs/loader:1464:18)
+    at Module._compile (node:internal/modules/cjs/loader:1495:20)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+    at node:internal/main/run_main_module:28:49
+
+Node.js v20.20.2
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: JavaScript (Node.js) | Task: 10 (Strict CapabilityScope Adherence & Self-Repair) | Attempt: 3/3
+Timestamp: 2026-11-24T07:00:53.592835924Z
+--- RAW GENERATED CODE ---
+<EMPTY CODE>
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+LLM invocation error: java.lang.RuntimeException: LLM request failed (HTTP 400): {"error":{"code":400,"message":"request (4256 tokens) exceeds the available context size (4096 tokens), try increasing it","type":"exceed_context_size_error","n_prompt_tokens":4256,"n_ctx":4096}}
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Kotlin | Task: 1 (BME280 Chip ID Read) | Attempt: 1/3
+Timestamp: 2026-11-24T07:01:25.117815054Z
+--- RAW GENERATED CODE ---
+import com.tdscript.benchmark.mock.*
+
+fun main() {
+    val chipId = I2C.read(0x76, 0xD0, 1)
+    println("BME280 Chip ID: ${chipId[0].toInt() & 0xFF}")
+}
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Kotlinc Compilation error:
+/tmp/bench_kt_754652057577171967.kt:5:49: error: expecting '}'
+    println("BME280 Chip ID: ${chipId[0].toInt() & 0xFF}")
+                                                ^
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Kotlin | Task: 2 (Modbus Boiler Temperature Control) | Attempt: 1/3
+Timestamp: 2026-11-24T07:04:04.989210414Z
+--- RAW GENERATED CODE ---
+fun main() {
+    // Feed watchdog to prevent timeout
+    WATCHDOG.feed()
+    
+    // Read boiler temperature from Modbus register 100
+    val temperature = PLC.modbusRead("127.0.0.1", 100)
+    
+    // Read pump status from Modbus register 101
+    val pumpStatus = PLC.modbusRead("127.0.0.1", 101)
+    
+    // If temperature exceeds 250, turn pump OFF
+    if (temperature > 250) {
+        PLC.modbusWrite("127.0.0.1", 101, 0)
+    }
+    
+    // Feed watchdog again before termination
+    WATCHDOG.feed()
+}
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Kotlinc Compilation error:
+/tmp/bench_kt_15269214169761023914.kt:3:5: error: unresolved reference: WATCHDOG
+    WATCHDOG.feed()
+    ^
+/tmp/bench_kt_15269214169761023914.kt:6:23: error: unresolved reference: PLC
+    val temperature = PLC.modbusRead("127.0.0.1", 100)
+                      ^
+/tmp/bench_kt_15269214169761023914.kt:9:22: error: unresolved reference: PLC
+    val pumpStatus = PLC.modbusRead("127.0.0.1", 101)
+                     ^
+/tmp/bench_kt_15269214169761023914.kt:13:9: error: unresolved reference: PLC
+        PLC.modbusWrite("127.0.0.1", 101, 0)
+        ^
+/tmp/bench_kt_15269214169761023914.kt:17:5: error: unresolved reference: WATCHDOG
+    WATCHDOG.feed()
+    ^
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+[FAILURE] Target: Kotlin | Task: 5 (Localized Notification Resource) | Attempt: 1/3
+Timestamp: 2026-11-24T07:06:58.132664286Z
+--- RAW GENERATED CODE ---
+import com.tdscript.benchmark.mock.*
+
+fun main() {
+    // Create localized notification with key ALERT_TEMP and temp=24.5
+    val temp = 24.5
+    val notification = LString("ALERT_TEMP", temp)
+    
+    // Print the localized notification
+    println(notification)
+    
+    // Feed watchdog to prevent emergency stop
+    WATCHDOG.feed()
+}
+--- ERROR / DIAGNOSTIC SENT TO LLM ---
+Kotlinc Compilation error:
+/tmp/bench_kt_5327431942858511352.kt:6:24: error: unresolved reference: LString
+    val notification = LString("ALERT_TEMP", temp)
+                       ^
+/tmp/bench_kt_5327431942858511352.kt:9:5: error: overload resolution ambiguity: 
+public inline fun println(message: Any?): Unit defined in kotlin.io
+public inline fun println(message: Boolean): Unit defined in kotlin.io
+public inline fun println(message: Byte): Unit defined in kotlin.io
+public inline fun println(message: Char): Unit defined in kotlin.io
+public inline fun println(message: CharArray): Unit defined in kotlin.io
+public inline fun println(message: Double): Unit defined in kotlin.io
+public inline fun println(message: Float): Unit defined in kotlin.io
+public inline fun println(message: Int): Unit defined in kotlin.io
+public inline fun println(message: Long): Unit defined in kotlin.io
+public inline fun println(message: Short): Unit defined in kotlin.io
+    println(notification)
+    ^
+
+--------------------------------------------------------------------------------
+
