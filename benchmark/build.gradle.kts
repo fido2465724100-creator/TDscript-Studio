@@ -12,9 +12,17 @@ application {
     mainClass.set("com.tdscript.benchmark.MainKt")
 }
 
+tasks.register<JavaExec>("runSystemBenchmark") {
+    group = "benchmark"
+    description = "Runs the comprehensive system benchmark suite (Cold Start, Throughput, Memory, Security, Faults, Conformance)"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.tdscript.benchmark.OvernightTestSuiteKt")
+    systemProperties(System.getProperties().map { it.key.toString() to it.value }.toMap())
+}
+
 tasks.register<JavaExec>("runOvernight") {
     group = "benchmark"
-    description = "Runs the comprehensive overnight benchmark suite across all 6 dimensions"
+    description = "Alias for runSystemBenchmark"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.tdscript.benchmark.OvernightTestSuiteKt")
     systemProperties(System.getProperties().map { it.key.toString() to it.value }.toMap())
