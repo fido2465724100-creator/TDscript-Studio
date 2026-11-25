@@ -7,7 +7,7 @@ import com.tdscript.core.*
  * Эмулирует реальные I2C датчики, Modbus PLC и USB/BLE шины,
  * позволяя разработчику или AI отладить скрипт и драйвер без физического оборудования.
  */
-class AiHardwareSandbox(
+open class AiHardwareSandbox(
     capabilities: Int = Capabilities.I2C_READ or Capabilities.I2C_WRITE or Capabilities.PLC_READ or Capabilities.PLC_WRITE or Capabilities.SERIAL_RAW,
     scope: CapabilityScope = CapabilityScope.UNRESTRICTED
 ) : StandardHostSPI(capabilities, scope) {
