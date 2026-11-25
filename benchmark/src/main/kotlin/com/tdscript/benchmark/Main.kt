@@ -17,16 +17,16 @@ fun main(args: Array<String>) {
         ?: ""
 
     val reportPath = args.find { it.startsWith("--out=") }?.substringAfter("--out=")
-        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT_TEST5.md"
+        ?: "/home/anton/TDscript-Studio/BENCHMARK_REPORT_TEST6.md"
 
     val maxTokens = args.find { it.startsWith("--max-tokens=") }?.substringAfter("--max-tokens=")?.toIntOrNull()
         ?: 4096
 
     val failuresLogPath = args.find { it.startsWith("--failures-out=") }?.substringAfter("--failures-out=")
-        ?: "/home/anton/TDscript-Studio/benchmark_failures_test5.log"
+        ?: "/home/anton/TDscript-Studio/benchmark_failures_test6.log"
 
     val tracePath = args.find { it.startsWith("--trace-out=") }?.substringAfter("--trace-out=")
-        ?: "/home/anton/TDscript-Studio/benchmark_full_trace_test5.jsonl"
+        ?: "/home/anton/TDscript-Studio/benchmark_full_trace_test6.jsonl"
 
     val enableGbnf = args.any { it == "--use-gbnf" }
 
@@ -69,10 +69,10 @@ fun main(args: Array<String>) {
     )
 
     val progressLabel = args.find { it.startsWith("--progress-label=") }?.substringAfter("--progress-label=")
-        ?: "TEST #5"
+        ?: "TEST #6"
 
     val title = args.find { it.startsWith("--title=") }?.substringAfter("--title=")
-        ?: "TDscript Global LLM Benchmark — Тест №5 (AI-First Validation)"
+        ?: "TDscript Global LLM Benchmark — Тест №6 (AI-Native Diagnostics)"
 
     val runner = BenchmarkRunner(
         llmClient = client,

@@ -19,7 +19,7 @@ class BenchmarkRunner(
     private val failuresLogFile: File = File("/home/anton/TDscript-Studio/benchmark_failures.log"),
     private val traceJsonlFile: File = File("/home/anton/TDscript-Studio/benchmark_full_trace.jsonl"),
     private val enableGbnf: Boolean = false,
-    private val progressLabel: String = "TEST #5"
+    private val progressLabel: String = "TEST #6"
 ) {
 
     fun runBenchmark(): List<TargetBenchmarkSummary> {
@@ -680,22 +680,22 @@ class BenchmarkRunner(
                 } else if (rawError.contains("LSTRING")) {
                     "E105@10:3 exp=L\"KEY:{p}\" got=concat(+)"
                 } else if (rawError.contains("Expected output containing") || rawError.contains("stdout was empty")) {
-                    "E107@1:1 exp=stdout_match got=${rawError.take(45)}"
+                    "E107@1:1 exp=stdout_match got=$rawError"
                 } else if (rawError.contains("emergencyStop")) {
                     "E108@1:1 exp=normal_execution got=emergencyStop"
                 } else {
-                    "E101@1:1 exp=valid_syntax got=${rawError.take(40)}"
+                    "E101@1:1 exp=valid_syntax got=$rawError"
                 }
             }
             ErrorRepairStyle.FULL_JSON -> {
                 val diag = if (rawError.contains("SCOPE_VIOLATION")) {
                     DiagnosticError.scopeViolation(14, 5, "0x76 | 0x77", "0x68", rawError)
                 } else if (rawError.contains("Expected output containing")) {
-                    DiagnosticError("TDS_E107_OUTPUT_MISMATCH", 1, 1, rawError, "expected output", rawError.take(40))
+                    DiagnosticError("TDS_E107_OUTPUT_MISMATCH", 1, 1, rawError, "expected output", rawError)
                 } else if (rawError.contains("emergencyStop")) {
                     DiagnosticError("TDS_E108_UNEXPECTED_EMERGENCY_STOP", 1, 1, rawError, "normal execution", "emergencyStop")
                 } else {
-                    DiagnosticError("TDS_E101_SYNTAX_ERROR", 1, 1, rawError, "valid syntax", rawError.take(30))
+                    DiagnosticError("TDS_E101_SYNTAX_ERROR", 1, 1, rawError, "valid syntax", rawError)
                 }
                 diag.toJson()
             }
